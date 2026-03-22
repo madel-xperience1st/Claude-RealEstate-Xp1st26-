@@ -1,6 +1,5 @@
 import UIKit
-import FirebaseAuth
-import FirebaseMessaging
+import FirebaseCore
 import UserNotifications
 
 /// Application delegate handling Firebase initialization and push notification setup.
@@ -13,16 +12,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         FirebaseApp.configure()
         configureNotifications(application: application)
-        Messaging.messaging().delegate = self
         return true
     }
 
-    /// Forwards the device token to Firebase Messaging.
+    /// Forwards the device token (logged for debugging).
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
-        Messaging.messaging().apnsToken = deviceToken
+        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        print("[PropHub] APNs device token: \(token)")
     }
 
     /// Logs failures to register for remote notifications.
@@ -70,18 +69,5 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     ) async {
         let userInfo = response.notification.request.content.userInfo
         NotificationRouter.shared.handle(userInfo: userInfo)
-    }
-}
-
-// MARK: - MessagingDelegate
-
-extension AppDelegate: MessagingDelegate {
-
-    /// Called when the FCM registration token is refreshed.
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        guard let token = fcmToken else { return }
-        Task {
-            await NotificationService.shared.registerToken(token)
-        }
     }
 }
