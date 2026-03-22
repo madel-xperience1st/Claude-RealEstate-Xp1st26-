@@ -1,7 +1,7 @@
 import Foundation
 
 /// View model for the demo project selector screen.
-/// Fetches available demo projects from MuleSoft and manages project selection.
+/// Fetches available demo projects from MuleSoft or uses mock data in demo mode.
 @MainActor
 final class DemoSwitcherViewModel: ObservableObject {
     @Published var projects: [DemoProject] = []
@@ -11,11 +11,19 @@ final class DemoSwitcherViewModel: ObservableObject {
     private let apiService = APIService.shared
     private let themeManager = ThemeManager.shared
     private let userSession = UserSession.shared
+    private let settings = AppSettings.shared
 
-    /// Fetches all available demo projects from the MuleSoft API.
+    /// Fetches all available demo projects.
     func loadProjects() async {
         isLoading = true
         error = nil
+
+        if settings.useMockData {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            projects = MockDataProvider.demoProjects
+            isLoading = false
+            return
+        }
 
         do {
             let fetchedProjects: [DemoProject] = try await apiService.request(

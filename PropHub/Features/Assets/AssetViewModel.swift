@@ -10,11 +10,19 @@ final class AssetViewModel: ObservableObject {
     @Published var error: APIError?
 
     private let apiService = APIService.shared
+    private let settings = AppSettings.shared
 
     /// Fetches all assets for a unit.
     func loadAssets(unitId: String) async {
         isLoading = true
         error = nil
+
+        if settings.useMockData {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            assets = MockDataProvider.assets
+            isLoading = false
+            return
+        }
 
         do {
             assets = try await apiService.request(
@@ -32,6 +40,11 @@ final class AssetViewModel: ObservableObject {
 
     /// Fetches warranty details for a specific asset.
     func loadWarranty(assetId: String) async {
+        if settings.useMockData {
+            warranty = MockDataProvider.warranty(for: assetId)
+            return
+        }
+
         do {
             warranty = try await apiService.request(
                 .assetWarranty(assetId: assetId),
@@ -46,6 +59,11 @@ final class AssetViewModel: ObservableObject {
 
     /// Fetches maintenance records for a specific asset.
     func loadMaintenance(assetId: String) async {
+        if settings.useMockData {
+            maintenanceRecords = MockDataProvider.maintenanceRecords
+            return
+        }
+
         do {
             maintenanceRecords = try await apiService.request(
                 .assetMaintenance(assetId: assetId),

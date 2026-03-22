@@ -10,6 +10,7 @@ final class FinanceViewModel: ObservableObject {
     @Published var error: APIError?
 
     private let apiService = APIService.shared
+    private let settings = AppSettings.shared
     private let unitId: String
 
     init(unitId: String) {
@@ -20,6 +21,15 @@ final class FinanceViewModel: ObservableObject {
     func loadFinanceData() async {
         isLoading = true
         error = nil
+
+        if settings.useMockData {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            installments = MockDataProvider.installments
+            invoices = MockDataProvider.invoices
+            paymentSummary = MockDataProvider.paymentSummary
+            isLoading = false
+            return
+        }
 
         do {
             async let fetchedInstallments: [Installment] = apiService.request(

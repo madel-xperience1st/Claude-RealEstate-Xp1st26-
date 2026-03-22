@@ -14,6 +14,7 @@ enum AuthState: Equatable {
 
 /// Manages the Google OAuth 2.0 authentication flow and MuleSoft token exchange.
 /// Validates the user against the Salesforce presales whitelist via MuleSoft.
+/// In demo mode, bypasses auth entirely and signs in as a mock user.
 @MainActor
 final class AuthManager: ObservableObject {
     static let shared = AuthManager()
@@ -24,6 +25,7 @@ final class AuthManager: ObservableObject {
     private let tokenManager = TokenManager.shared
     private let userSession = UserSession.shared
     private let environment = Environment.shared
+    private let settings = AppSettings.shared
 
     private init() {
         Task {
@@ -31,8 +33,28 @@ final class AuthManager: ObservableObject {
         }
     }
 
+    /// Signs in using demo mode (mock user, no backend required).
+    func signInWithDemoMode() async {
+        authState = .loading
+        isLoading = true
+
+        // Simulate brief network delay for realism
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        let mockUser = MockDataProvider.mockUser
+        userSession.setSession(user: mockUser)
+        authState = .authenticated
+        isLoading = false
+    }
+
     /// Initiates the Google Sign-In flow from the given presenting view controller.
     func signInWithGoogle() async {
+        // If demo mode is enabled, use mock auth
+        if settings.demoAuthEnabled {
+            await signInWithDemoMode()
+            return
+        }
+
         authState = .loading
         isLoading = true
 
@@ -65,8 +87,10 @@ final class AuthManager: ObservableObject {
 
     /// Signs out the user, clears tokens, and resets state.
     func signOut() async {
-        GIDSignIn.sharedInstance.signOut()
-        await tokenManager.clearTokens()
+        if !settings.demoAuthEnabled {
+            GIDSignIn.sharedInstance.signOut()
+            await tokenManager.clearTokens()
+        }
         userSession.clearSession()
         CacheManager.shared.clearAll()
         ThemeManager.shared.reset()
@@ -109,6 +133,12 @@ final class AuthManager: ObservableObject {
 
     /// Checks if there is an existing valid session on app launch.
     private func checkExistingSession() async {
+        // In demo mode, auto-sign-in if previously authenticated
+        if settings.demoAuthEnabled && userSession.currentUser != nil {
+            authState = .authenticated
+            return
+        }
+
         guard userSession.isAuthenticated else {
             authState = .unauthenticated
             return

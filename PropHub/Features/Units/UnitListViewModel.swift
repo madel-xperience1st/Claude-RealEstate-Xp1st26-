@@ -9,14 +9,25 @@ final class UnitListViewModel: ObservableObject {
 
     private let apiService = APIService.shared
     private let userSession = UserSession.shared
+    private let settings = AppSettings.shared
 
     /// Fetches all units for the active demo project and contact.
     func loadUnits() async {
-        guard let projectId = userSession.activeProjectId,
-              let contactId = userSession.contactId else { return }
-
         isLoading = true
         error = nil
+
+        if settings.useMockData {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            units = MockDataProvider.units
+            isLoading = false
+            return
+        }
+
+        guard let projectId = userSession.activeProjectId,
+              let contactId = userSession.contactId else {
+            isLoading = false
+            return
+        }
 
         do {
             units = try await apiService.request(

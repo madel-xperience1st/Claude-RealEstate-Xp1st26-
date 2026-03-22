@@ -12,11 +12,19 @@ final class ServiceViewModel: ObservableObject {
 
     private let apiService = APIService.shared
     private let userSession = UserSession.shared
+    private let settings = AppSettings.shared
 
-    /// Fetches service requests for the first unit of the active project.
+    /// Fetches service requests for a unit.
     func loadServiceRequests(unitId: String) async {
         isLoading = true
         error = nil
+
+        if settings.useMockData {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            serviceRequests = MockDataProvider.serviceRequests
+            isLoading = false
+            return
+        }
 
         do {
             serviceRequests = try await apiService.request(
@@ -46,6 +54,29 @@ final class ServiceViewModel: ObservableObject {
         error = nil
         successMessage = nil
 
+        if settings.useMockData {
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            let newRequest = ServiceRequest(
+                id: "sr-new-\(UUID().uuidString.prefix(4))",
+                caseNumber: "CS-\(String(format: "%06d", Int.random(in: 3000...9999)))",
+                category: category,
+                subject: subject,
+                status: "New",
+                createdDate: Date(),
+                assignedTechnician: nil,
+                description: description,
+                preferredDate: preferredDate,
+                relatedAssetId: assetId
+            )
+            serviceRequests.insert(newRequest, at: 0)
+            successMessage = String(
+                format: NSLocalizedString("service_created", comment: ""),
+                newRequest.caseNumber
+            )
+            isSubmitting = false
+            return
+        }
+
         let dateFormatter = ISO8601DateFormatter()
         let body = ServiceRequestBody(
             category: category,
@@ -60,7 +91,6 @@ final class ServiceViewModel: ObservableObject {
                 .createServiceRequest(unitId: unitId, body: body)
             )
 
-            // Upload photo if provided
             if let photo = photo, let imageData = photo.jpegData(compressionQuality: 0.8) {
                 _ = try await apiService.uploadMultipart(
                     .uploadAttachment(requestId: response.id),
@@ -74,7 +104,6 @@ final class ServiceViewModel: ObservableObject {
                 response.caseNumber
             )
 
-            // Refresh list
             await loadServiceRequests(unitId: unitId)
         } catch let apiError as APIError {
             error = apiError

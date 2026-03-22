@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// Login screen presenting Google Sign-In for presales users.
-/// Shows the PropHub branding and a single Google SSO button.
+/// Shows the PropHub branding, Google SSO button, and a Demo Mode option.
 struct AuthView: View {
     @EnvironmentObject var authManager: AuthManager
+    @StateObject private var settings = AppSettings.shared
 
     var body: some View {
         ZStack {
@@ -36,8 +37,28 @@ struct AuthView: View {
 
                 Spacer()
 
-                // Sign-In Button
+                // Sign-In Buttons
                 VStack(spacing: 16) {
+                    // Demo Mode Button (primary for presales)
+                    Button {
+                        Task { await authManager.signInWithDemoMode() }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "play.circle.fill")
+                                .font(.title3)
+                            Text(NSLocalizedString("enter_demo_mode", comment: ""))
+                                .font(.headline)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.blue)
+                    .disabled(authManager.isLoading)
+                    .padding(.horizontal, 32)
+                    .accessibilityLabel(NSLocalizedString("enter_demo_mode", comment: ""))
+
+                    // Google Sign-In Button
                     Button {
                         Task { await authManager.signInWithGoogle() }
                     } label: {
@@ -50,8 +71,7 @@ struct AuthView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
+                    .buttonStyle(.bordered)
                     .disabled(authManager.isLoading)
                     .padding(.horizontal, 32)
                     .accessibilityLabel(NSLocalizedString("sign_in_google", comment: ""))

@@ -152,3 +152,27 @@
 "error_no_root_vc" = "Unable to present sign-in screen";
 "error_no_google_token" = "Failed to retrieve Google ID token";
 "error_auth_failed" = "Authentication failed. Please try again.";
+
+/* Demo Mode */
+"enter_demo_mode" = "Enter Demo Mode";
+
+/* Tabs */
+"tab_launches" = "Launches";
+"tab_settings" = "Settings";
+
+/* Settings */
+"settings_title" = "Settings";
+"settings_demo_section" = "Demo Mode";
+"settings_mock_data" = "Use Mock Data (No Backend)";
+"settings_demo_auth" = "Demo Login (Skip Google)";
+"settings_orgs_section" = "Salesforce Orgs";
+"settings_add_org" = "Add Org Connection";
+"settings_about_section" = "About";
+"settings_version" = "Version";
+"settings_cache" = "Cache";
+"settings_clear_cache" = "Clear";
+"settings_save" = "Save";
+"org_details_section" = "Connection Details";
+"org_name_label" = "Name (e.g., Production)";
+"org_mule_url_label" = "MuleSoft Base URL";
+"org_id_label" = "Salesforce Org ID";
