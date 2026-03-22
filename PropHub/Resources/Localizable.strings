@@ -1,0 +1,154 @@
+/* Authentication */
+"auth_subtitle" = "Real Estate Customer Portal";
+"auth_restricted" = "Access restricted to authorized presales consultants";
+"sign_in_google" = "Sign in with Google";
+"sign_out" = "Sign Out";
+"unauthorized_title" = "Access Denied";
+"unauthorized_message" = "Your Google account is not authorized to access PropHub. Please contact your administrator.";
+
+/* Navigation */
+"tab_dashboard" = "Dashboard";
+"tab_units" = "My Units";
+"tab_services" = "Services";
+"tab_chat" = "Chat";
+"switch_demo" = "Switch Demo";
+"more_options" = "More Options";
+"org_settings" = "Org Settings";
+
+/* Demo Switcher */
+"select_demo" = "Select Demo";
+"select_demo_hint" = "Double tap to select this demo project";
+"no_projects_title" = "No Demo Projects";
+"no_projects_message" = "No active demo projects found. Check your Salesforce configuration.";
+"unit_count" = "%d units";
+
+/* Dashboard */
+"total_units" = "Total Units";
+"open_requests" = "Open Requests";
+"overdue_payments" = "Overdue";
+"next_payment" = "Next Payment";
+"my_units" = "My Units";
+"no_units" = "No units found";
+"payment_overview" = "Payment Overview";
+"recent_activity" = "Recent Activity";
+"no_recent_activity" = "No recent activity";
+
+/* Units */
+"no_units_title" = "No Units";
+"no_units_message" = "No units are assigned to your account for this demo project.";
+"floor_label" = "Floor";
+"payment_progress" = "Payment Progress";
+"floor_plan" = "Floor Plan";
+"unit_number_label" = "Unit Number";
+"building_label" = "Building";
+"type_label" = "Type";
+"area_label" = "Area";
+"status_label" = "Status";
+"handover_label" = "Handover Date";
+"view_payments" = "View Payments";
+"request_service" = "Request Service";
+"view_assets" = "View Assets";
+
+/* Finance */
+"finance_title" = "Finance";
+"installments_tab" = "Installments";
+"invoices_tab" = "Invoices";
+"overdue_tab" = "Overdue";
+"total_price_label" = "Total Price";
+"paid_amount_label" = "Paid";
+"remaining_label" = "Remaining";
+"next_due_label" = "Next Due";
+"no_installments_title" = "No Installments";
+"no_installments_message" = "No payment installments found for this unit.";
+"no_invoices_title" = "No Invoices";
+"no_invoices_message" = "No invoices found for this unit.";
+"no_overdue_title" = "All Caught Up";
+"no_overdue_message" = "No overdue payments. Great job!";
+"download_pdf" = "Download PDF";
+"days_overdue" = "%d days overdue";
+"penalty_label" = "Penalty:";
+"contact_us" = "Contact Us";
+
+/* Services */
+"new_request" = "New Service Request";
+"no_requests_title" = "No Service Requests";
+"no_requests_message" = "You haven't created any service requests yet.";
+"request_detail" = "Request Detail";
+"service_detail_placeholder" = "Service request details will appear here.";
+"category_section" = "Category";
+"category_label" = "Category";
+"details_section" = "Details";
+"subject_placeholder" = "Brief description of the issue";
+"subject_label" = "Subject";
+"description_label" = "Description";
+"photo_section" = "Photo";
+"add_photo" = "Add Photo";
+"change_photo" = "Change Photo";
+"attached_photo" = "Attached photo";
+"preferred_date_section" = "Preferred Service Date";
+"set_preferred_date" = "Set preferred date";
+"date_label" = "Date";
+"cancel" = "Cancel";
+"submit" = "Submit";
+"service_created" = "Service request %@ created successfully.";
+
+/* Assets */
+"assets_title" = "Assets";
+"no_assets_title" = "No Assets";
+"no_assets_message" = "No registered assets found for this unit.";
+"warranty_tab" = "Warranty";
+"maintenance_tab" = "Maintenance";
+"warranty_period" = "Warranty Period";
+"start_date" = "Start";
+"end_date" = "End";
+"provider_label" = "Provider";
+"warranty_terms" = "Terms & Conditions";
+"no_warranty_title" = "No Warranty";
+"no_warranty_message" = "No warranty information available for this asset.";
+"upcoming_maintenance" = "Upcoming";
+"past_maintenance" = "Past";
+"no_maintenance_title" = "No Maintenance Records";
+"no_maintenance_message" = "No maintenance records found for this asset.";
+
+/* Chat */
+"chat_placeholder" = "Type a message...";
+"chat_input" = "Message input";
+"send_message" = "Send";
+"escalate_agent" = "Connect to live agent";
+"agent_typing" = "Agent is typing";
+"chat_error" = "Sorry, something went wrong. Please try again.";
+
+/* New Launches */
+"new_launches_title" = "New Launches";
+"no_launches_title" = "No New Launches";
+"no_launches_message" = "Check back later for new project launches.";
+"expected_handover" = "Expected Handover";
+"price_range" = "Price Range";
+"amenities_title" = "Amenities";
+"join_waitlist" = "Join Waitlist";
+"on_waitlist" = "On Waitlist";
+
+/* Common */
+"loading" = "Loading...";
+"error_title" = "Error";
+"try_again" = "Try Again";
+"dismiss" = "Dismiss";
+"ok" = "OK";
+"success_title" = "Success";
+"default_org_name" = "Default";
+
+/* Errors */
+"error_invalid_url" = "Invalid URL";
+"error_invalid_response" = "Invalid server response";
+"error_unauthorized" = "Session expired. Please sign in again.";
+"error_forbidden" = "Access denied";
+"error_not_found" = "Resource not found";
+"error_rate_limited" = "Too many requests. Please try again later.";
+"error_server" = "Server error (%d). Please try again.";
+"error_decoding" = "Data parsing error: %@";
+"error_no_data" = "No data received";
+"error_token_expired" = "Your session has expired. Please sign in again.";
+"error_offline" = "No internet connection. Please check your network.";
+"error_no_root_vc" = "Unable to present sign-in screen";
+"error_no_google_token" = "Failed to retrieve Google ID token";
+"error_auth_failed" = "Authentication failed. Please try again.";
