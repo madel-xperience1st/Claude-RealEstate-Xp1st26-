@@ -1,5 +1,5 @@
 import SwiftUI
-import FirebaseCore
+import FirebaseAuth
 import GoogleSignIn
 
 /// Main entry point for the PropHub application.

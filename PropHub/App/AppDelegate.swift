@@ -1,5 +1,5 @@
 import UIKit
-import FirebaseCore
+import FirebaseAuth
 import FirebaseMessaging
 import UserNotifications
 
