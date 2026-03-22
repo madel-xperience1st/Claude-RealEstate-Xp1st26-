@@ -2,6 +2,7 @@ import Foundation
 
 /// Central HTTP client for all MuleSoft API communication.
 /// Handles token injection, automatic retry on 401, rate limiting, and caching.
+@MainActor
 final class APIService {
     static let shared = APIService()
 
@@ -60,8 +61,8 @@ final class APIService {
         switch httpResponse.statusCode {
         case 200...299:
             let decoded: T = try decode(data)
-            if let key = cacheKey {
-                cacheManager.store(decoded as? (any Encodable), forKey: key)
+            if let key = cacheKey, let encodable = decoded as? any Encodable {
+                cacheManager.storeEncodable(encodable, forKey: key)
             }
             return decoded
 

@@ -30,6 +30,15 @@ final class CacheManager {
         }
     }
 
+    /// Stores a type-erased Encodable value in the cache.
+    func storeEncodable(_ value: any Encodable, forKey key: String) {
+        func encode<T: Encodable>(_ v: T) -> Data? { try? JSONEncoder().encode(v) }
+        guard let data = encode(value) else { return }
+        queue.async(flags: .barrier) {
+            self.cache[key] = CacheEntry(data: data, timestamp: Date())
+        }
+    }
+
     /// Retrieves a cached value if it exists and has not expired.
     func retrieve<T: Decodable>(forKey key: String, as type: T.Type) -> T? {
         var result: T?
