@@ -1,9 +1,6 @@
 import SwiftUI
-import FirebaseAuth
-import GoogleSignIn
 
 /// Main entry point for the PropHub application.
-/// Configures Firebase, Google Sign-In, and sets up the root view hierarchy.
 @main
 struct PropHubApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -17,9 +14,6 @@ struct PropHubApp: App {
                 .environmentObject(authManager)
                 .environmentObject(themeManager)
                 .environmentObject(environment)
-                .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
-                }
         }
     }
 }

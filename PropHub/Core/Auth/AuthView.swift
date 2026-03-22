@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Login screen presenting Google Sign-In for presales users.
-/// Shows the PropHub branding, Google SSO button, and a Demo Mode option.
+/// Login screen for PropHub.
+/// Shows branding and a single sign-in button (demo mode).
+/// Google SSO can be re-added later.
 struct AuthView: View {
     @EnvironmentObject var authManager: AuthManager
-    @StateObject private var settings = AppSettings.shared
 
     var body: some View {
         ZStack {
@@ -37,9 +37,8 @@ struct AuthView: View {
 
                 Spacer()
 
-                // Sign-In Buttons
+                // Sign-In Button
                 VStack(spacing: 16) {
-                    // Demo Mode Button (primary for presales)
                     Button {
                         Task { await authManager.signInWithDemoMode() }
                     } label: {
@@ -57,24 +56,6 @@ struct AuthView: View {
                     .disabled(authManager.isLoading)
                     .padding(.horizontal, 32)
                     .accessibilityLabel(NSLocalizedString("enter_demo_mode", comment: ""))
-
-                    // Google Sign-In Button
-                    Button {
-                        Task { await authManager.signInWithGoogle() }
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "person.badge.key.fill")
-                                .font(.title3)
-                            Text(NSLocalizedString("sign_in_google", comment: ""))
-                                .font(.headline)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(authManager.isLoading)
-                    .padding(.horizontal, 32)
-                    .accessibilityLabel(NSLocalizedString("sign_in_google", comment: ""))
 
                     if authManager.isLoading {
                         ProgressView()
