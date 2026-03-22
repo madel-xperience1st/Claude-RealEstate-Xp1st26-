@@ -37,6 +37,12 @@ struct NewLaunchesView: View {
 
     private func loadLaunches() async {
         isLoading = true
+        if AppSettings.shared.useMockData {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            launches = MockDataProvider.projectLaunches
+            isLoading = false
+            return
+        }
         do {
             launches = try await APIService.shared.request(
                 .listLaunches(projectId: UserSession.shared.activeProjectId),

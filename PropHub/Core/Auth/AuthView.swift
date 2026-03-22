@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Login screen presenting Google Sign-In for presales users.
-/// Shows the PropHub branding and a single Google SSO button.
+/// Login screen for PropHub.
+/// Shows branding and a single sign-in button (demo mode).
+/// Google SSO can be re-added later.
 struct AuthView: View {
     @EnvironmentObject var authManager: AuthManager
 
@@ -39,12 +40,12 @@ struct AuthView: View {
                 // Sign-In Button
                 VStack(spacing: 16) {
                     Button {
-                        Task { await authManager.signInWithGoogle() }
+                        Task { await authManager.signInWithDemoMode() }
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: "person.badge.key.fill")
+                            Image(systemName: "play.circle.fill")
                                 .font(.title3)
-                            Text(NSLocalizedString("sign_in_google", comment: ""))
+                            Text(NSLocalizedString("enter_demo_mode", comment: ""))
                                 .font(.headline)
                         }
                         .frame(maxWidth: .infinity)
@@ -54,7 +55,7 @@ struct AuthView: View {
                     .tint(.blue)
                     .disabled(authManager.isLoading)
                     .padding(.horizontal, 32)
-                    .accessibilityLabel(NSLocalizedString("sign_in_google", comment: ""))
+                    .accessibilityLabel(NSLocalizedString("enter_demo_mode", comment: ""))
 
                     if authManager.isLoading {
                         ProgressView()

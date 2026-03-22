@@ -46,7 +46,7 @@ struct ServiceRequestView: View {
                 }
             }
             .task {
-                let unitId = UserSession.shared.activeProjectId ?? ""
+                let unitId = MockDataProvider.units.first?.id ?? UserSession.shared.activeProjectId ?? "unit-001"
                 selectedUnitId = unitId
                 await viewModel.loadServiceRequests(unitId: unitId)
             }

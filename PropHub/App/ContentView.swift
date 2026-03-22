@@ -139,15 +139,6 @@ struct MainTabView: View {
                 }
                 .accessibilityLabel(NSLocalizedString("tab_units", comment: ""))
 
-            ServiceRequestView()
-                .tabItem {
-                    Label(
-                        NSLocalizedString("tab_services", comment: ""),
-                        systemImage: "wrench.and.screwdriver.fill"
-                    )
-                }
-                .accessibilityLabel(NSLocalizedString("tab_services", comment: ""))
-
             ChatView()
                 .tabItem {
                     Label(
@@ -156,6 +147,24 @@ struct MainTabView: View {
                     )
                 }
                 .accessibilityLabel(NSLocalizedString("tab_chat", comment: ""))
+
+            NewLaunchesView()
+                .tabItem {
+                    Label(
+                        NSLocalizedString("tab_launches", comment: ""),
+                        systemImage: "sparkles"
+                    )
+                }
+                .accessibilityLabel(NSLocalizedString("tab_launches", comment: ""))
+
+            SettingsView()
+                .tabItem {
+                    Label(
+                        NSLocalizedString("tab_settings", comment: ""),
+                        systemImage: "gearshape.fill"
+                    )
+                }
+                .accessibilityLabel(NSLocalizedString("tab_settings", comment: ""))
         }
         .tint(themeManager.primaryColor)
     }
