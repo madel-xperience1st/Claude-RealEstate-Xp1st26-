@@ -1,11 +1,11 @@
 # ============================================
 # PropHub MuleSoft API - CI/CD Pipeline
 # ============================================
-# REDEPLOYMENT TO NEW TRIAL ORG:
-# Just update these 3 GitHub Secrets:
+# REDEPLOYMENT TO NEW MULESOFT TRIAL:
+# Just update these 2 GitHub Secrets:
 #   - ANYPOINT_USERNAME (new trial login)
 #   - ANYPOINT_PASSWORD (new trial password)
-#   - SF_SECURITY_TOKEN (from new SF org)
+# SF credentials DON'T change (Connected App lives in your SF org).
 # Then push or trigger manually. Done!
 # ============================================
 
@@ -128,9 +128,10 @@ jobs:
             -Dcloudhub.environment="Sandbox" \
             -Dcloudhub.region="us-east-2" \
             -Dmule.env="${{ env.MULE_ENV }}" \
+            -DSF_CONSUMER_KEY="${{ secrets.SF_CONSUMER_KEY }}" \
             -DSF_USERNAME="${{ secrets.SF_USERNAME }}" \
-            -DSF_PASSWORD="${{ secrets.SF_PASSWORD }}" \
-            -DSF_SECURITY_TOKEN="${{ secrets.SF_SECURITY_TOKEN }}" \
+            -DSF_KEYSTORE_PATH="${{ secrets.SF_KEYSTORE_PATH }}" \
+            -DSF_KEYSTORE_PASSWORD="${{ secrets.SF_KEYSTORE_PASSWORD }}" \
             -DSF_DEMO_USER_EMAIL="${{ secrets.SF_DEMO_USER_EMAIL }}" \
             -DJWT_SECRET="${{ secrets.JWT_SECRET }}" \
             -DskipTests

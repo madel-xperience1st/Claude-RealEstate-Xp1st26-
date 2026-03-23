@@ -35,12 +35,52 @@ cp .env.template .env
 # Edit .env with your Salesforce + Anypoint credentials
 ```
 
-### Step 2: Get Your Salesforce Security Token
+### Step 2: Create Salesforce Connected App (one-time setup)
 
-1. Log into Salesforce
-2. Go to: **Setup > My Personal Information > Reset My Security Token**
-3. Check your email for the new token
-4. Add it to `.env` as `SF_SECURITY_TOKEN`
+This lives in your **Salesforce org** (permanent) - doesn't change when MuleSoft trial expires.
+
+**A. Generate a self-signed certificate + keystore:**
+```bash
+cd mulesoft/prophub-api/src/main/resources
+mkdir -p keystore
+
+# Generate private key + self-signed certificate
+keytool -genkeypair -alias prophub \
+  -keyalg RSA -keysize 2048 -validity 3650 \
+  -keystore keystore/salesforce-keystore.jks \
+  -storepass YOUR_KEYSTORE_PASSWORD \
+  -dname "CN=PropHub API, OU=Integration, O=PropHub, C=AE"
+
+# Export the public certificate (upload this to Salesforce)
+keytool -exportcert -alias prophub \
+  -keystore keystore/salesforce-keystore.jks \
+  -storepass YOUR_KEYSTORE_PASSWORD \
+  -file keystore/salesforce-cert.crt -rfc
+```
+
+**B. Create Connected App in Salesforce:**
+1. **Setup > App Manager > New Connected App**
+2. Fill in:
+   - Name: `PropHub MuleSoft Integration`
+   - API Name: `PropHub_MuleSoft_Integration`
+   - Contact Email: your email
+3. **Enable OAuth Settings:**
+   - Callback URL: `https://login.salesforce.com/services/oauth2/callback`
+   - Check **"Use digital signatures"** → upload `salesforce-cert.crt`
+   - Selected OAuth Scopes: `Full access (full)`, `Perform requests at any time (refresh_token, offline_access)`
+4. Save → wait 2-10 minutes for activation
+5. **Manage > Edit Policies:**
+   - Permitted Users: **"Admin approved users are pre-authorized"**
+6. **Manage > Profiles:** add **"System Administrator"**
+7. Copy the **Consumer Key** → add to `.env` as `SF_CONSUMER_KEY`
+
+**C. Update `.env` with your values:**
+```bash
+SF_CONSUMER_KEY=3MVG9...your_consumer_key
+SF_USERNAME=your-admin@salesforce.com
+SF_KEYSTORE_PATH=keystore/salesforce-keystore.jks
+SF_KEYSTORE_PASSWORD=YOUR_KEYSTORE_PASSWORD
+```
 
 ### Step 3: Deploy
 
@@ -57,13 +97,14 @@ API runs at `http://localhost:8081/api/v1`
 
 **Option C - GitHub Actions (recommended for redeployment):**
 1. Add these GitHub Secrets to your repo:
-   - `ANYPOINT_USERNAME`
-   - `ANYPOINT_PASSWORD`
-   - `SF_USERNAME`
-   - `SF_PASSWORD`
-   - `SF_SECURITY_TOKEN`
-   - `SF_DEMO_USER_EMAIL`
-   - `JWT_SECRET`
+   - `ANYPOINT_USERNAME` - MuleSoft Anypoint login
+   - `ANYPOINT_PASSWORD` - MuleSoft Anypoint password
+   - `SF_CONSUMER_KEY` - Connected App Consumer Key
+   - `SF_USERNAME` - SF integration user
+   - `SF_KEYSTORE_PATH` - path to JKS keystore
+   - `SF_KEYSTORE_PASSWORD` - keystore password
+   - `SF_DEMO_USER_EMAIL` - demo user email
+   - `JWT_SECRET` - PropHub app token signing secret
 2. Push to `main` branch or trigger manually
 
 ## When Your Trial Expires (New Org Setup)
@@ -72,21 +113,14 @@ This is the key advantage of the GitHub DevOps approach:
 
 ### New MuleSoft Trial
 1. Sign up for new Anypoint Platform trial
-2. Update **3 GitHub Secrets**:
+2. Update **only 2 GitHub Secrets**:
    - `ANYPOINT_USERNAME` → new trial login
    - `ANYPOINT_PASSWORD` → new trial password
 3. Go to Actions tab → Run workflow → Done!
 
-### New Salesforce Trial
-1. Sign up for new Salesforce developer org
-2. Deploy PropHub custom objects (from `salesforce-data/` CSVs)
-3. Update **3 GitHub Secrets**:
-   - `SF_USERNAME` → new org username
-   - `SF_PASSWORD` → new org password
-   - `SF_SECURITY_TOKEN` → new security token
-4. Go to Actions tab → Run workflow → Done!
+**SF credentials DON'T change** - the Connected App, keystore, and consumer key all live in your Salesforce org which stays the same.
 
-**Total time: ~10 minutes** vs rebuilding everything from scratch.
+**Total time: ~5 minutes** vs rebuilding everything from scratch.
 
 ## API Endpoints
 
@@ -185,9 +219,11 @@ Then set `AppSettings.useMockData = false` to switch from mock data to live Sale
 ## Troubleshooting
 
 **Salesforce connection fails:**
-- Verify security token (Setup > Reset My Security Token)
-- Check IP restrictions (Setup > Network Access > add your IP range)
-- For sandbox: ensure `sf.login.url` uses `https://test.salesforce.com`
+- Verify Connected App is activated (wait 2-10 minutes after creation)
+- Check that "Admin approved users are pre-authorized" is set
+- Verify the certificate in the keystore matches the one uploaded to the Connected App
+- Ensure the integration user's profile is added under Connected App > Manage > Profiles
+- For sandbox: ensure `sf.token.endpoint` uses `https://test.salesforce.com/services/oauth2/token`
 
 **401 errors from iOS app:**
 - Check that `Presales_User__mdt` has your email whitelisted

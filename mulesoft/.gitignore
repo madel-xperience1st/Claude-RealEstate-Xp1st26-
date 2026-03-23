@@ -3,6 +3,13 @@
 !.env.template
 *.env.local
 
+# Keystore files (contain private keys) - NEVER commit
+**/keystore/*.jks
+**/keystore/*.p12
+**/keystore/*.crt
+**/keystore/*.pem
+!**/keystore/.gitkeep
+
 # Maven build output
 **/target/
 *.jar

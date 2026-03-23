@@ -79,14 +79,16 @@ else
     echo -e "${YELLOW}Create one from .env.template for credentials.${NC}"
 
     # Prompt for required values if not set
-    if [ -z "$SF_USERNAME" ]; then
-        echo -e "\n${BLUE}Enter your Salesforce credentials:${NC}"
-        read -p "SF Username: " SF_USERNAME
-        read -sp "SF Password: " SF_PASSWORD
+    if [ -z "$SF_CONSUMER_KEY" ]; then
+        echo -e "\n${BLUE}Enter your Salesforce Connected App credentials:${NC}"
+        read -p "SF Consumer Key: " SF_CONSUMER_KEY
+        read -p "SF Username (integration user): " SF_USERNAME
+        read -p "SF Keystore Path [keystore/salesforce-keystore.jks]: " SF_KEYSTORE_PATH
+        SF_KEYSTORE_PATH="${SF_KEYSTORE_PATH:-keystore/salesforce-keystore.jks}"
+        read -sp "SF Keystore Password: " SF_KEYSTORE_PASSWORD
         echo
-        read -p "SF Security Token: " SF_SECURITY_TOKEN
         read -p "SF Demo User Email: " SF_DEMO_USER_EMAIL
-        export SF_USERNAME SF_PASSWORD SF_SECURITY_TOKEN SF_DEMO_USER_EMAIL
+        export SF_CONSUMER_KEY SF_USERNAME SF_KEYSTORE_PATH SF_KEYSTORE_PASSWORD SF_DEMO_USER_EMAIL
     fi
 fi
 
@@ -109,9 +111,10 @@ if [ "$LOCAL_ONLY" = true ]; then
 
     mvn mule:run \
         -Dmule.env="$ENV" \
+        -DSF_CONSUMER_KEY="$SF_CONSUMER_KEY" \
         -DSF_USERNAME="$SF_USERNAME" \
-        -DSF_PASSWORD="$SF_PASSWORD" \
-        -DSF_SECURITY_TOKEN="$SF_SECURITY_TOKEN" \
+        -DSF_KEYSTORE_PATH="$SF_KEYSTORE_PATH" \
+        -DSF_KEYSTORE_PASSWORD="$SF_KEYSTORE_PASSWORD" \
         -DSF_DEMO_USER_EMAIL="$SF_DEMO_USER_EMAIL" \
         -DJWT_SECRET="${JWT_SECRET:-prophub-dev-secret-change-me}"
 else
@@ -136,9 +139,10 @@ else
         -Dcloudhub.environment="$CLOUDHUB_ENV" \
         -Dcloudhub.region="$CLOUDHUB_REGION" \
         -Dmule.env="$ENV" \
+        -DSF_CONSUMER_KEY="$SF_CONSUMER_KEY" \
         -DSF_USERNAME="$SF_USERNAME" \
-        -DSF_PASSWORD="$SF_PASSWORD" \
-        -DSF_SECURITY_TOKEN="$SF_SECURITY_TOKEN" \
+        -DSF_KEYSTORE_PATH="$SF_KEYSTORE_PATH" \
+        -DSF_KEYSTORE_PASSWORD="$SF_KEYSTORE_PASSWORD" \
         -DSF_DEMO_USER_EMAIL="$SF_DEMO_USER_EMAIL" \
         -DJWT_SECRET="${JWT_SECRET:-prophub-dev-secret-change-me}" \
         -DskipTests
