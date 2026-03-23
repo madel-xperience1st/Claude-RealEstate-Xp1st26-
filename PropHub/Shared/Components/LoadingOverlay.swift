@@ -9,10 +9,10 @@ struct LoadingOverlay: View {
             VStack(spacing: 16) {
                 ProgressView()
                     .scaleEffect(1.3)
-                    .tint(.brandGold)
+                    .tint(Color.brandGold)
                 Text("Loading")
                     .font(.caption)
-                    .foregroundStyle(.brandGray)
+                    .foregroundStyle(Color.brandGray)
             }
             .padding(28)
             .background(

@@ -16,16 +16,16 @@ struct EmptyStateView: View {
                     .frame(width: 90, height: 90)
                 Image(systemName: icon)
                     .font(.system(size: 36))
-                    .foregroundStyle(.brandGold)
+                    .foregroundStyle(Color.brandGold)
             }
 
             Text(title)
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(.brandCharcoal)
+                .foregroundStyle(Color.brandCharcoal)
 
             Text(message)
                 .font(.subheadline)
-                .foregroundStyle(.brandGray)
+                .foregroundStyle(Color.brandGray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
