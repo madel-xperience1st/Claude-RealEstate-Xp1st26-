@@ -1,7 +1,7 @@
 import Foundation
 
 /// Model representing a real estate unit from Salesforce `Unit__c`.
-struct Unit: Codable, Identifiable, Equatable {
+struct Unit: Codable, Identifiable, Equatable, Hashable {
     let id: String
     let unitNumber: String
     let building: String

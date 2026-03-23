@@ -142,37 +142,50 @@ struct ErrorStateView: View {
     }
 }
 
-/// Premium tab-based navigation.
+/// Premium tab-based navigation with centralized routing.
 struct MainTabView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var router: AppRouter
+    @StateObject private var notificationRouter = NotificationRouter.shared
 
     var body: some View {
-        TabView {
+        TabView(selection: $router.selectedTab) {
             DashboardView()
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
+                .tag(AppRouter.Tab.home)
 
             UnitListView()
                 .tabItem {
                     Label("My Units", systemImage: "building.2.fill")
                 }
+                .tag(AppRouter.Tab.units)
 
             ChatView()
                 .tabItem {
                     Label("Concierge", systemImage: "bubble.left.and.bubble.right.fill")
                 }
+                .tag(AppRouter.Tab.concierge)
 
             NewLaunchesView()
                 .tabItem {
                     Label("Launches", systemImage: "sparkles")
                 }
+                .tag(AppRouter.Tab.launches)
 
             SettingsView()
                 .tabItem {
                     Label("More", systemImage: "line.3.horizontal")
                 }
+                .tag(AppRouter.Tab.settings)
         }
         .tint(themeManager.primaryColor)
+        .onChange(of: notificationRouter.pendingDeepLink) { _, newLink in
+            if let link = newLink {
+                router.handleDeepLink(link)
+                notificationRouter.clearPendingDeepLink()
+            }
+        }
     }
 }

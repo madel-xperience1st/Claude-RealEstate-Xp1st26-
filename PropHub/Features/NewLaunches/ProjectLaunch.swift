@@ -1,7 +1,7 @@
 import Foundation
 
 /// Model representing a new project launch from Salesforce `Project_Launch__c`.
-struct ProjectLaunch: Codable, Identifiable, Equatable {
+struct ProjectLaunch: Codable, Identifiable, Equatable, Hashable {
     let id: String
     let name: String
     let description: String?

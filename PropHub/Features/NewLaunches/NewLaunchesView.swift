@@ -7,16 +7,17 @@ struct NewLaunchesView: View {
     @State private var isLoading = false
     @State private var error: APIError?
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var router: AppRouter
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.launchesPath) {
             ZStack {
                 Color.brandWhite.ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 20) {
                         ForEach(launches) { launch in
-                            NavigationLink(destination: LaunchDetailView(launch: launch)) {
+                            NavigationLink(value: AppRouter.Destination.launchDetail(launch)) {
                                 LaunchCard(launch: launch)
                             }
                             .buttonStyle(.plain)
@@ -34,6 +35,9 @@ struct NewLaunchesView: View {
                 message: "No upcoming projects at the moment."
             )
             .task { await loadLaunches() }
+            .navigationDestination(for: AppRouter.Destination.self) { destination in
+                destinationView(for: destination)
+            }
         }
     }
 

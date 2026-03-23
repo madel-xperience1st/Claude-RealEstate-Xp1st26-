@@ -7,6 +7,7 @@ struct PropHubApp: App {
     @StateObject private var authManager = AuthManager.shared
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var environment = Environment.shared
+    @StateObject private var router = AppRouter.shared
 
     var body: some Scene {
         WindowGroup {
@@ -14,6 +15,7 @@ struct PropHubApp: App {
                 .environmentObject(authManager)
                 .environmentObject(themeManager)
                 .environmentObject(environment)
+                .environmentObject(router)
         }
     }
 }

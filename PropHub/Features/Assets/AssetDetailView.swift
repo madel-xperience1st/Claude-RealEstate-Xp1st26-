@@ -3,7 +3,7 @@ import SwiftUI
 /// Detailed view of a single asset with warranty and maintenance information.
 struct AssetDetailView: View {
     let asset: Asset
-    @ObservedObject var viewModel: AssetViewModel
+    @StateObject private var viewModel = AssetViewModel()
     @State private var selectedTab = 0
 
     var body: some View {

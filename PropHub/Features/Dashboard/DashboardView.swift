@@ -4,10 +4,11 @@ import SwiftUI
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var router: AppRouter
     @State private var showDemoSwitcher = false
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.homePath) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Hero Welcome Card
@@ -45,6 +46,9 @@ struct DashboardView: View {
             }
             .task {
                 await viewModel.loadDashboard()
+            }
+            .navigationDestination(for: AppRouter.Destination.self) { destination in
+                destinationView(for: destination)
             }
         }
     }
@@ -97,30 +101,57 @@ struct DashboardView: View {
 
     private var quickStatsSection: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
-            StatCard(
-                title: "Total Units",
-                value: "\(viewModel.totalUnits)",
-                icon: "building.2",
-                color: themeManager.primaryColor
-            )
-            StatCard(
-                title: "Open Requests",
-                value: "\(viewModel.openServiceRequests)",
-                icon: "wrench.and.screwdriver",
-                color: .brandGold
-            )
-            StatCard(
-                title: "Overdue",
-                value: "\(viewModel.overdueCount)",
-                icon: "exclamationmark.circle",
-                color: viewModel.overdueCount > 0 ? .brandCoral : .brandEmerald
-            )
-            StatCard(
-                title: "Next Payment",
-                value: viewModel.nextPaymentDate?.mediumFormatted ?? "-",
-                icon: "calendar",
-                color: .brandSky
-            )
+            Button {
+                router.selectedTab = .units
+            } label: {
+                StatCard(
+                    title: "Total Units",
+                    value: "\(viewModel.totalUnits)",
+                    icon: "building.2",
+                    color: themeManager.primaryColor
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                router.navigateToServiceRequests()
+            } label: {
+                StatCard(
+                    title: "Open Requests",
+                    value: "\(viewModel.openServiceRequests)",
+                    icon: "wrench.and.screwdriver",
+                    color: .brandGold
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                if let unitId = viewModel.units.first?.id {
+                    router.navigateToInstallments(unitId: unitId)
+                }
+            } label: {
+                StatCard(
+                    title: "Overdue",
+                    value: "\(viewModel.overdueCount)",
+                    icon: "exclamationmark.circle",
+                    color: viewModel.overdueCount > 0 ? .brandCoral : .brandEmerald
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                if let unitId = viewModel.units.first?.id {
+                    router.navigateToInstallments(unitId: unitId)
+                }
+            } label: {
+                StatCard(
+                    title: "Next Payment",
+                    value: viewModel.nextPaymentDate?.mediumFormatted ?? "-",
+                    icon: "calendar",
+                    color: .brandSky
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -138,7 +169,12 @@ struct DashboardView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(viewModel.units.prefix(3).enumerated()), id: \.element.id) { index, unit in
-                        UnitSummaryRow(unit: unit)
+                        Button {
+                            router.navigateToUnit(unit)
+                        } label: {
+                            UnitSummaryRow(unit: unit)
+                        }
+                        .buttonStyle(.plain)
                         if index < min(viewModel.units.count, 3) - 1 {
                             Divider().padding(.leading, 16)
                         }
@@ -207,7 +243,12 @@ struct DashboardView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(viewModel.recentServiceRequests.prefix(3).enumerated()), id: \.element.id) { index, request in
-                        ServiceRequestRow(request: request)
+                        Button {
+                            router.navigateToServiceRequestDetail(requestId: request.id)
+                        } label: {
+                            ServiceRequestRow(request: request)
+                        }
+                        .buttonStyle(.plain)
                         if index < min(viewModel.recentServiceRequests.count, 3) - 1 {
                             Divider().padding(.leading, 16)
                         }

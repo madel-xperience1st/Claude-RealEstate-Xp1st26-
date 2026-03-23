@@ -1,7 +1,7 @@
 import Foundation
 
 /// Model representing a registered asset in a delivered unit (Salesforce `Asset`).
-struct Asset: Codable, Identifiable, Equatable {
+struct Asset: Codable, Identifiable, Equatable, Hashable {
     let id: String
     let name: String
     let serialNumber: String?

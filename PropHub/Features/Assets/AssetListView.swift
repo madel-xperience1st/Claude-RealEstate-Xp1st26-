@@ -8,7 +8,7 @@ struct AssetListView: View {
     var body: some View {
         List {
             ForEach(viewModel.assets) { asset in
-                NavigationLink(destination: AssetDetailView(asset: asset, viewModel: viewModel)) {
+                NavigationLink(value: AppRouter.Destination.assetDetail(asset)) {
                     AssetRow(asset: asset)
                 }
             }

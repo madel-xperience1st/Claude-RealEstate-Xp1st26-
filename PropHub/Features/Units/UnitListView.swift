@@ -1,20 +1,21 @@
 import SwiftUI
 
-/// Premium unit list with card-based layout.
+/// Premium unit list with card-based layout and centralized routing.
 struct UnitListView: View {
     @StateObject private var viewModel = UnitListViewModel()
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var router: AppRouter
     @State private var showDemoSwitcher = false
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.unitsPath) {
             ZStack {
                 Color.brandWhite.ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 16) {
                         ForEach(viewModel.units) { unit in
-                            NavigationLink(destination: UnitDetailView(unit: unit)) {
+                            NavigationLink(value: AppRouter.Destination.unitDetail(unit)) {
                                 UnitCardView(unit: unit)
                             }
                             .buttonStyle(.plain)
@@ -50,6 +51,9 @@ struct UnitListView: View {
             }
             .task {
                 await viewModel.loadUnits()
+            }
+            .navigationDestination(for: AppRouter.Destination.self) { destination in
+                destinationView(for: destination)
             }
         }
     }

@@ -70,6 +70,8 @@
 		2531F3612F42D1F04EA1396B /* LoadingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6220D52E76615913556D6A /* LoadingOverlay.swift */; };
 		9F01B78CE639C2911A672C29 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B307BD01DA491AFBF7E6FCA /* StatusBadge.swift */; };
 		C2AE6F9494B0F95E8F90F3C3 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C239FF8EEA2808785307BEA /* ThemeManager.swift */; };
+		NAV001APPROUTER000000001 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = NAV001APPROUTER000000002 /* AppRouter.swift */; };
+		NAV002DESTBUILDER000001 /* DestinationBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = NAV002DESTBUILDER000002 /* DestinationBuilder.swift */; };
 		18F91EEB54CBAEF19AB1CAFA /* AppConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = C0CF9E85C3FC4E2FBFF5C3F8 /* AppConfig.plist */; };
 		7224050364937769ACB62D81 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 76B4035CE7A1AECAFFD4BBE9 /* Localizable.strings */; };
 		A1B2C3D4E5F60718192A3B4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D4E5F6071819A1B2C3D4E5F6 /* Assets.xcassets */; };
@@ -143,6 +145,8 @@
 		C0CF9E85C3FC4E2FBFF5C3F8 /* AppConfig.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "AppConfig.plist"; sourceTree = "<group>"; };
 		D4E5F6071819A1B2C3D4E5F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets.xcassets"; sourceTree = "<group>"; };
 		76B4035CE7A1AECAFFD4BBE9 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = "Localizable.strings"; sourceTree = "<group>"; };
+		NAV001APPROUTER000000002 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRouter.swift"; sourceTree = "<group>"; };
+		NAV002DESTBUILDER000002 /* DestinationBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DestinationBuilder.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,9 +204,19 @@
 				2999CBF6F26594D10C358AF6 /* Auth */,
 				65D225C57EDF677E01932E48 /* Config */,
 				F9F5EC078BC52E5F692A2810 /* Extensions */,
+				NAV000NAVGROUP00000001 /* Navigation */,
 				6EAB2CD8726D6440677D693F /* Networking */,
 			);
 			path = "Core";
+			sourceTree = "<group>";
+		};
+		NAV000NAVGROUP00000001 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				NAV001APPROUTER000000002 /* AppRouter.swift */,
+				NAV002DESTBUILDER000002 /* DestinationBuilder.swift */,
+			);
+			path = "Navigation";
 			sourceTree = "<group>";
 		};
 		2999CBF6F26594D10C358AF6 /* Auth */ = {
@@ -510,6 +524,8 @@
 				258BAC79B01A5B6F618175B9 /* Environment.swift in Sources */,
 				2FCD061C78A7709EB18E2156 /* MockDataProvider.swift in Sources */,
 				0E0A06431441887D8A4DFCAD /* SecretsManager.swift in Sources */,
+				NAV001APPROUTER000000001 /* AppRouter.swift in Sources */,
+				NAV002DESTBUILDER000001 /* DestinationBuilder.swift in Sources */,
 				D924CD37EC0A41D79EDDC8F7 /* Color+Brand.swift in Sources */,
 				7A69BA7A12E1B153F4A5D6CB /* Date+Extensions.swift in Sources */,
 				2D0E0DCCF595416691442CF7 /* View+Loading.swift in Sources */,

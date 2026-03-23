@@ -1,7 +1,7 @@
 import Foundation
 
 /// Model representing a service request (Salesforce Case).
-struct ServiceRequest: Codable, Identifiable, Equatable {
+struct ServiceRequest: Codable, Identifiable, Equatable, Hashable {
     let id: String
     let caseNumber: String
     let category: String

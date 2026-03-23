@@ -116,13 +116,13 @@ struct UnitDetailView: View {
 
                     // Quick Actions
                     VStack(spacing: 12) {
-                        NavigationLink(destination: InstallmentView(unitId: unit.id)) {
+                        NavigationLink(value: AppRouter.Destination.installments(unitId: unit.id)) {
                             quickActionRow(icon: "creditcard", title: "View Payments", color: .brandNavy)
                         }
-                        NavigationLink(destination: ServiceRequestView()) {
+                        NavigationLink(value: AppRouter.Destination.serviceRequests) {
                             quickActionRow(icon: "wrench.and.screwdriver", title: "Request Service", color: .brandGold)
                         }
-                        NavigationLink(destination: AssetListView(unitId: unit.id)) {
+                        NavigationLink(value: AppRouter.Destination.assetList(unitId: unit.id)) {
                             quickActionRow(icon: "shippingbox", title: "View Assets", color: .brandSky)
                         }
                     }
