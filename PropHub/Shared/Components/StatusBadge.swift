@@ -31,8 +31,8 @@ struct StatusBadge: View {
         case "delivered": return StatusBadge(text: status, color: .brandEmerald)
         case "handover ready": return StatusBadge(text: status, color: .brandSky)
         case "under construction": return StatusBadge(text: status, color: .brandGold)
-        case "available": return StatusBadge(text: status, color: Color(hex: "2AA198"))
-        case "reserved": return StatusBadge(text: status, color: Color(hex: "8B5CF6"))
+        case "available": return StatusBadge(text: status, color: .statusAvailable)
+        case "reserved": return StatusBadge(text: status, color: .statusReserved)
         case "sold": return StatusBadge(text: status, color: .brandGray)
         default: return StatusBadge(text: status, color: .brandGray)
         }
@@ -41,7 +41,7 @@ struct StatusBadge: View {
     static func forServiceStatus(_ status: String) -> StatusBadge {
         switch status.lowercased() {
         case "new": return StatusBadge(text: status, color: .brandSky)
-        case "assigned": return StatusBadge(text: status, color: Color(hex: "8B5CF6"))
+        case "assigned": return StatusBadge(text: status, color: .statusReserved)
         case "in progress": return StatusBadge(text: status, color: .brandGold)
         case "completed": return StatusBadge(text: status, color: .brandEmerald)
         default: return StatusBadge(text: status, color: .brandGray)

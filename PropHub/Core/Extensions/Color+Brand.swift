@@ -36,33 +36,42 @@ extension Color {
         return String(format: "#%02X%02X%02X", red, green, blue)
     }
 
-    // MARK: - Premium Brand Colors (Emaar-inspired)
+    // MARK: - Premium Brand Colors (Asset Catalog with fallback)
 
     /// Deep navy — primary brand color
-    static let brandNavy = Color(hex: "0A1628")
+    static let brandNavy = Color("Colors/BrandNavy", bundle: .main)
     /// Rich gold — accent color
-    static let brandGold = Color(hex: "C8A951")
+    static let brandGold = Color("Colors/BrandGold", bundle: .main)
     /// Light champagne gold — subtle highlights
-    static let brandChampagne = Color(hex: "F5ECD7")
+    static let brandChampagne = Color("Colors/BrandChampagne", bundle: .main)
     /// Warm white — background
-    static let brandWhite = Color(hex: "FAFAF8")
+    static let brandWhite = Color("Colors/BrandWhite", bundle: .main)
     /// Soft platinum — card backgrounds
-    static let brandPlatinum = Color(hex: "F2F2EF")
+    static let brandPlatinum = Color("Colors/BrandPlatinum", bundle: .main)
     /// Emerald green — success states
-    static let brandEmerald = Color(hex: "2E8B57")
+    static let brandEmerald = Color("Colors/BrandEmerald", bundle: .main)
     /// Coral red — error/overdue states
-    static let brandCoral = Color(hex: "E8584F")
+    static let brandCoral = Color("Colors/BrandCoral", bundle: .main)
     /// Sky blue — info/upcoming states
-    static let brandSky = Color(hex: "4A90D9")
+    static let brandSky = Color("Colors/BrandSky", bundle: .main)
     /// Warm gray — secondary text
-    static let brandGray = Color(hex: "8E8E93")
+    static let brandGray = Color("Colors/BrandGray", bundle: .main)
     /// Deep charcoal — primary text
-    static let brandCharcoal = Color(hex: "1C1C1E")
+    static let brandCharcoal = Color("Colors/BrandCharcoal", bundle: .main)
 
-    /// Premium gradient from navy to gold
+    // MARK: - Status Colors (Asset Catalog)
+
+    /// Teal — available status
+    static let statusAvailable = Color("Colors/StatusAvailable", bundle: .main)
+    /// Purple — reserved/assigned status
+    static let statusReserved = Color("Colors/StatusReserved", bundle: .main)
+
+    // MARK: - Gradients
+
+    /// Premium gradient from navy to deep navy
     static var premiumGradient: LinearGradient {
         LinearGradient(
-            colors: [.brandNavy, Color(hex: "1A2A4A")],
+            colors: [.brandNavy, Color("Colors/GradientNavyEnd", bundle: .main)],
             startPoint: .topLeading, endPoint: .bottomTrailing
         )
     }
@@ -70,7 +79,11 @@ extension Color {
     /// Gold shimmer gradient
     static var goldGradient: LinearGradient {
         LinearGradient(
-            colors: [Color(hex: "D4AF37"), .brandGold, Color(hex: "E8D48B")],
+            colors: [
+                Color("Colors/GradientGoldStart", bundle: .main),
+                .brandGold,
+                Color("Colors/GradientGoldEnd", bundle: .main)
+            ],
             startPoint: .leading, endPoint: .trailing
         )
     }

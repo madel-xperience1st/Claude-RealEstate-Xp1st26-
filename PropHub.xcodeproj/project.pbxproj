@@ -72,6 +72,7 @@
 		C2AE6F9494B0F95E8F90F3C3 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C239FF8EEA2808785307BEA /* ThemeManager.swift */; };
 		18F91EEB54CBAEF19AB1CAFA /* AppConfig.plist in Resources */ = {isa = PBXBuildFile; fileRef = C0CF9E85C3FC4E2FBFF5C3F8 /* AppConfig.plist */; };
 		7224050364937769ACB62D81 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 76B4035CE7A1AECAFFD4BBE9 /* Localizable.strings */; };
+		A1B2C3D4E5F60718192A3B4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D4E5F6071819A1B2C3D4E5F6 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -140,6 +141,7 @@
 		7B307BD01DA491AFBF7E6FCA /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StatusBadge.swift"; sourceTree = "<group>"; };
 		7C239FF8EEA2808785307BEA /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThemeManager.swift"; sourceTree = "<group>"; };
 		C0CF9E85C3FC4E2FBFF5C3F8 /* AppConfig.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "AppConfig.plist"; sourceTree = "<group>"; };
+		D4E5F6071819A1B2C3D4E5F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets.xcassets"; sourceTree = "<group>"; };
 		76B4035CE7A1AECAFFD4BBE9 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = "Localizable.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -392,6 +394,7 @@
 		8849325C155DB55183F8DF35 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D4E5F6071819A1B2C3D4E5F6 /* Assets.xcassets */,
 				76B4035CE7A1AECAFFD4BBE9 /* Localizable.strings */,
 			);
 			path = "Resources";
@@ -482,6 +485,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D4E5F60718192A3B4C /* Assets.xcassets in Resources */,
 				18F91EEB54CBAEF19AB1CAFA /* AppConfig.plist in Resources */,
 				7224050364937769ACB62D81 /* Localizable.strings in Resources */,
 			);
