@@ -1,0 +1,8 @@
+Name,SerialNumber,Unit__c.Unit_Number__c,Manufacturer__c,InstallDate,Warranty_Start_Date__c,Warranty_End_Date__c,Category__c
+Samsung WindFree Split AC,SAM-WF-2024-1204A,A-1204,Samsung,2024-10-15,2024-10-15,2026-10-15,HVAC
+Samsung WindFree Split AC,SAM-WF-2024-1204B,A-1204,Samsung,2024-10-15,2024-10-15,2026-10-15,HVAC
+Bosch Serie 6 Refrigerator,BSH-S6-2024-7823,A-1204,Bosch,2024-10-20,2024-10-20,2025-10-20,Appliance
+Siemens Built-in Oven,SIE-BO-2024-4521,A-1204,Siemens,2024-10-20,2024-10-20,2026-10-20,Appliance
+Grohe Essence Kitchen Mixer,GRH-EK-2024-9012,A-1204,Grohe,2024-10-18,2024-10-18,2029-10-18,Plumbing
+Schneider Wiser Lighting Panel,SCH-WL-2024-3345,A-1204,Schneider Electric,2024-10-15,2024-10-15,2025-04-15,Electrical
+Roca In-Wash Inspira Smart Toilet,ROC-IW-2024-6678,A-1204,Roca,2024-10-18,2024-10-18,2024-10-18,Plumbing

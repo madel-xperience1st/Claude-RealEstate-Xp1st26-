@@ -1,0 +1,6 @@
+CaseNumber,Subject,Description,Status,Service_Category__c,Unit__c.Unit_Number__c,Preferred_Service_Date__c,ContactEmail
+CS-002341,AC not cooling in master bedroom,"The split AC in the master bedroom is running but not cooling. Temperature stays at 28°C.",In Progress,HVAC,A-1204,2025-03-15,demo@prophub.com
+CS-002298,Kitchen sink slow drain,"Kitchen sink draining very slowly, taking 5+ minutes.",Closed,Plumbing,A-1204,,demo@prophub.com
+CS-002387,Living room dimmer switch not working,"Dimmer switch in the living room only works on full brightness.",New,Electrical,A-1204,2025-03-22,demo@prophub.com
+CS-002156,Balcony door seal replacement,"Wind noise through balcony sliding door. Seal appears worn.",Closed,General,A-1204,,demo@prophub.com
+CS-002401,Annual HVAC maintenance due,"Scheduled annual maintenance for all AC units in the apartment.",New,Maintenance,A-1204,2025-04-01,demo@prophub.com

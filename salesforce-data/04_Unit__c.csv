@@ -1,0 +1,5 @@
+Unit_Number__c,Demo_Project__c.Name,Building__c,Floor__c,Area_SQM__c,Unit_Type__c,Status__c,Handover_Date__c,Total_Price__c,Floor_Plan_URL__c,Owner_Contact__c.PropHub_User_Id__c
+A-1204,Creek Harbour Residences,Tower A — Creek View,12,125.5,2BR,Delivered,2025-01-15,2850000,,user-demo-001
+B-0803,Creek Harbour Residences,Tower B — Marina View,8,78.3,1BR,Under Construction,2026-09-30,1650000,,user-demo-001
+C-PH01,Creek Harbour Residences,Tower C — Sky Collection,42,310.0,Penthouse,Handover Ready,2025-06-01,12500000,,user-demo-001
+V-105,Creek Harbour Residences,Orchid Cluster,0,245.0,Villa,Delivered,2024-11-20,8750000,,user-demo-001

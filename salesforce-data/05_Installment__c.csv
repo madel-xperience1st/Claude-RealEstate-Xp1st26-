@@ -1,0 +1,10 @@
+Unit__c.Unit_Number__c,Milestone_Name__c,Due_Date__c,Amount__c,Status__c,Paid_Date__c,Penalty_Amount__c,Sort_Order__c
+A-1204,Booking Fee (10%),2023-03-15,285000,Paid,2023-03-14,,1
+A-1204,Down Payment (10%),2023-06-15,285000,Paid,2023-06-10,,2
+A-1204,1st Construction (10%),2023-12-01,285000,Paid,2023-11-28,,3
+A-1204,2nd Construction (10%),2024-06-01,285000,Paid,2024-05-30,,4
+A-1204,3rd Construction (15%),2024-12-01,427500,Paid,2024-11-29,,5
+A-1204,Completion (15%),2025-03-01,427500,Overdue,,12825,6
+A-1204,Handover (20%),2025-06-01,570000,Upcoming,,,7
+A-1204,Post-Handover 1 (5%),2025-12-01,142500,Pending,,,8
+A-1204,Post-Handover 2 (5%),2026-06-01,142500,Pending,,,9
