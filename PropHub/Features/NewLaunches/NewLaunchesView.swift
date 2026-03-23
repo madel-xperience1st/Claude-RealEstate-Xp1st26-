@@ -63,44 +63,51 @@ struct NewLaunchesView: View {
     }
 }
 
-/// Premium launch card.
+/// Premium launch card with hero image area.
 struct LaunchCard: View {
     let launch: ProjectLaunch
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Hero Image
+            // Hero Image or gradient placeholder
             if let firstURL = launch.imageURLs.first {
                 KFImage(firstURL)
                     .placeholder {
-                        RoundedRectangle(cornerRadius: 0)
-                            .fill(Color.brandPlatinum)
-                            .frame(height: 200)
-                            .overlay {
-                                Image(systemName: "photo")
-                                    .font(.title)
-                                    .foregroundStyle(.brandGray)
-                            }
+                        ProjectHeroImage(
+                            primaryColor: themeManager.primaryColor,
+                            secondaryColor: themeManager.secondaryColor,
+                            icon: "sparkles",
+                            title: "NEW LAUNCH",
+                            height: 200
+                        )
                     }
                     .resizable()
                     .scaledToFill()
                     .frame(height: 200)
                     .clipped()
+            } else {
+                ProjectHeroImage(
+                    primaryColor: themeManager.primaryColor,
+                    secondaryColor: themeManager.secondaryColor,
+                    icon: "sparkles",
+                    title: "NEW LAUNCH",
+                    height: 200
+                )
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(launch.name)
-                    .font(.headline)
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.brandCharcoal)
 
                 if let handover = launch.expectedHandover {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 5) {
                         Image(systemName: "calendar")
-                            .font(.caption2)
-                            .foregroundStyle(.brandGold)
+                            .font(.system(size: 10))
+                            .foregroundStyle(themeManager.secondaryColor)
                         Text(handover)
-                            .font(.caption)
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.brandGray)
                     }
                 }
@@ -108,19 +115,19 @@ struct LaunchCard: View {
                 if let min = launch.priceRangeMin, let max = launch.priceRangeMax {
                     HStack(spacing: 4) {
                         CurrencyText(amount: min, currencyCode: themeManager.currencyCode, style: .caption)
-                        Text("-")
-                            .font(.caption)
+                        Text("–")
+                            .font(.system(size: 12))
                         CurrencyText(amount: max, currencyCode: themeManager.currencyCode, style: .caption)
                     }
-                    .foregroundStyle(.brandGold)
+                    .foregroundStyle(themeManager.secondaryColor)
                 }
             }
             .padding(16)
         }
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(.white)
-                .shadow(color: .black.opacity(0.06), radius: 10, y: 5)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
@@ -139,18 +146,30 @@ struct LaunchDetailView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Image Carousel
-                    TabView {
-                        ForEach(launch.imageURLs, id: \.self) { url in
-                            KFImage(url)
-                                .resizable()
-                                .scaledToFill()
+                    // Image Carousel or Hero
+                    if launch.imageURLs.isEmpty {
+                        ProjectHeroImage(
+                            primaryColor: themeManager.primaryColor,
+                            secondaryColor: themeManager.secondaryColor,
+                            icon: "sparkles",
+                            title: launch.name.uppercased(),
+                            height: 260
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .padding(.horizontal, 20)
+                    } else {
+                        TabView {
+                            ForEach(launch.imageURLs, id: \.self) { url in
+                                KFImage(url)
+                                    .resizable()
+                                    .scaledToFill()
+                            }
                         }
+                        .frame(height: 260)
+                        .tabViewStyle(.page)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .padding(.horizontal, 20)
                     }
-                    .frame(height: 260)
-                    .tabViewStyle(.page)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .padding(.horizontal, 20)
 
                     if let description = launch.description {
                         Text(description)
@@ -185,8 +204,8 @@ struct LaunchDetailView: View {
                     .padding(18)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(.white)
-                            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                     )
                     .padding(.horizontal, 20)
 
@@ -197,12 +216,12 @@ struct LaunchDetailView: View {
                             FlowLayout(spacing: 8) {
                                 ForEach(launch.amenitiesList, id: \.self) { amenity in
                                     Text(amenity)
-                                        .font(.caption)
-                                        .foregroundStyle(.brandNavy)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundStyle(themeManager.primaryColor)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 7)
                                         .background(
-                                            Capsule().fill(Color.brandChampagne)
+                                            Capsule().fill(themeManager.primaryColor.opacity(0.08))
                                         )
                                 }
                             }
@@ -226,7 +245,10 @@ struct LaunchDetailView: View {
                         .background(
                             joinedWaitlist
                             ? AnyShapeStyle(Color.brandEmerald.opacity(0.12))
-                            : AnyShapeStyle(Color.goldGradient)
+                            : AnyShapeStyle(LinearGradient(
+                                colors: [themeManager.secondaryColor.opacity(0.3), themeManager.secondaryColor.opacity(0.15)],
+                                startPoint: .leading, endPoint: .trailing
+                            ))
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
@@ -244,7 +266,7 @@ struct LaunchDetailView: View {
     private func detailRow(icon: String, label: String, value: String) -> some View {
         HStack {
             Image(systemName: icon)
-                .foregroundStyle(.brandGold)
+                .foregroundStyle(themeManager.secondaryColor)
                 .frame(width: 24)
             Text(label)
                 .foregroundStyle(.brandGray)
@@ -253,6 +275,6 @@ struct LaunchDetailView: View {
                 .fontWeight(.medium)
                 .foregroundStyle(.brandCharcoal)
         }
-        .font(.subheadline)
+        .font(.system(size: 15))
     }
 }

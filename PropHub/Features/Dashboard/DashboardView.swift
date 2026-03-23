@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Premium dashboard — Emaar-inspired with hero welcome, stat cards, and elegant sections.
+/// Premium dashboard — polished hero welcome, stat cards, and elegant sections.
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
     @EnvironmentObject var themeManager: ThemeManager
@@ -10,20 +10,11 @@ struct DashboardView: View {
     var body: some View {
         NavigationStack(path: $router.homePath) {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    // Hero Welcome Card
+                VStack(spacing: 20) {
                     heroWelcomeCard
-
-                    // Quick Stats
                     quickStatsSection
-
-                    // My Units
                     unitsSummarySection
-
-                    // Payment Overview
                     paymentOverviewSection
-
-                    // Recent Activity
                     recentActivitySection
                 }
                 .padding(.horizontal, 20)
@@ -57,39 +48,50 @@ struct DashboardView: View {
 
     private var heroWelcomeCard: some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.premiumGradient)
-                .frame(height: 160)
+            // Dynamic gradient using developer brand colors
+            LinearGradient(
+                colors: [
+                    themeManager.primaryColor,
+                    themeManager.primaryColor.opacity(0.85),
+                    themeManager.primaryColor.opacity(0.7)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .frame(height: 180)
+            .clipShape(RoundedRectangle(cornerRadius: 22))
 
-            // Gold accent line
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Circle()
-                        .fill(Color.brandGold.opacity(0.08))
-                        .frame(width: 200, height: 200)
-                        .offset(x: 50, y: 60)
-                }
+            // Decorative elements
+            GeometryReader { geo in
+                Circle()
+                    .fill(themeManager.secondaryColor.opacity(0.1))
+                    .frame(width: 200, height: 200)
+                    .offset(x: geo.size.width - 80, y: 20)
+
+                Circle()
+                    .fill(themeManager.secondaryColor.opacity(0.06))
+                    .frame(width: 120, height: 120)
+                    .offset(x: geo.size.width - 40, y: -30)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .frame(height: 180)
+            .clipShape(RoundedRectangle(cornerRadius: 22))
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Welcome back")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(.white.opacity(0.75))
 
                 Text(themeManager.developerName)
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
 
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color.brandGold)
-                        .frame(width: 6, height: 6)
+                HStack(spacing: 8) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(themeManager.secondaryColor)
+                        .frame(width: 16, height: 3)
                     Text(themeManager.activeProject?.name ?? "Select a project")
-                        .font(.caption)
-                        .foregroundStyle(.brandGold)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(themeManager.secondaryColor)
                 }
             }
             .padding(24)
@@ -100,7 +102,7 @@ struct DashboardView: View {
     // MARK: - Quick Stats
 
     private var quickStatsSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
             Button {
                 router.selectedTab = .units
             } label: {
@@ -120,7 +122,7 @@ struct DashboardView: View {
                     title: "Open Requests",
                     value: "\(viewModel.openServiceRequests)",
                     icon: "wrench.and.screwdriver",
-                    color: .brandGold
+                    color: themeManager.secondaryColor
                 )
             }
             .buttonStyle(.plain)
@@ -163,7 +165,7 @@ struct DashboardView: View {
 
             if viewModel.units.isEmpty {
                 Text("No units available")
-                    .font(.subheadline)
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(.brandGray)
                     .padding(.vertical, 8)
             } else {
@@ -176,15 +178,16 @@ struct DashboardView: View {
                         }
                         .buttonStyle(.plain)
                         if index < min(viewModel.units.count, 3) - 1 {
-                            Divider().padding(.leading, 16)
+                            Divider()
+                                .padding(.leading, 16)
                         }
                     }
                 }
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(.white)
-                        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                 )
             }
         }
@@ -197,33 +200,40 @@ struct DashboardView: View {
             SectionHeader(title: "Payment Overview", icon: "creditcard.fill")
 
             if let summary = viewModel.paymentSummary {
-                VStack(spacing: 12) {
+                VStack(spacing: 0) {
                     PaymentRow(
                         label: "Total Price",
                         amount: summary.totalPrice,
                         currencyCode: themeManager.currencyCode,
                         color: .brandCharcoal
                     )
+                    .padding(.vertical, 14)
+
                     Divider()
+
                     PaymentRow(
                         label: "Paid",
                         amount: summary.paidAmount,
                         currencyCode: themeManager.currencyCode,
                         color: .brandEmerald
                     )
+                    .padding(.vertical, 14)
+
                     Divider()
+
                     PaymentRow(
                         label: "Remaining",
                         amount: summary.remainingBalance,
                         currencyCode: themeManager.currencyCode,
-                        color: .brandGold
+                        color: themeManager.secondaryColor
                     )
+                    .padding(.vertical, 14)
                 }
-                .padding(16)
+                .padding(.horizontal, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(.white)
-                        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                 )
             }
         }
@@ -237,7 +247,7 @@ struct DashboardView: View {
 
             if viewModel.recentServiceRequests.isEmpty {
                 Text("No recent activity")
-                    .font(.subheadline)
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(.brandGray)
                     .padding(.vertical, 8)
             } else {
@@ -250,15 +260,16 @@ struct DashboardView: View {
                         }
                         .buttonStyle(.plain)
                         if index < min(viewModel.recentServiceRequests.count, 3) - 1 {
-                            Divider().padding(.leading, 16)
+                            Divider()
+                                .padding(.leading, 16)
                         }
                     }
                 }
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(.white)
-                        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                 )
             }
         }
@@ -274,10 +285,10 @@ struct SectionHeader: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.subheadline)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.brandGold)
             Text(title)
-                .font(.headline)
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.brandCharcoal)
         }
     }
@@ -292,7 +303,7 @@ struct PaymentRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.subheadline)
+                .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.brandGray)
             Spacer()
             CurrencyText(amount: amount, currencyCode: currencyCode, style: .body)
@@ -309,27 +320,32 @@ struct StatCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(color.opacity(0.1))
+                    .frame(width: 36, height: 36)
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(color)
-                Spacer()
             }
+
             Text(value)
-                .font(.system(size: 22, weight: .bold))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(.brandCharcoal)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+
             Text(title)
-                .font(.caption)
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.brandGray)
                 .lineLimit(1)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(.white)
-                .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
         )
         .accessibilityElement(children: .combine)
     }
@@ -340,18 +356,18 @@ struct UnitSummaryRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(unit.unitNumber)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.brandCharcoal)
                 Text(unit.building)
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.brandGray)
             }
             Spacer()
             StatusBadge.forUnitStatus(unit.status)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .accessibilityElement(children: .combine)
     }
 }
@@ -361,19 +377,19 @@ struct ServiceRequestRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(request.subject)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.brandCharcoal)
                     .lineLimit(1)
                 Text(request.caseNumber)
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.brandGray)
             }
             Spacer()
             StatusBadge.forServiceStatus(request.status)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .accessibilityElement(children: .combine)
     }
 }

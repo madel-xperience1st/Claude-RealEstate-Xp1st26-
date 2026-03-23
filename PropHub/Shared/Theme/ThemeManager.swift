@@ -11,6 +11,7 @@ final class ThemeManager: ObservableObject {
     @Published var developerName: String = "PropHub"
     @Published var activeProject: DemoProject?
     @Published var currencyCode: String = "AED"
+    @Published var developerIcon: String = "building.2.fill"
 
     private init() {}
 
@@ -21,6 +22,7 @@ final class ThemeManager: ObservableObject {
         logoURL = URL(string: project.logoUrl)
         developerName = project.developer
         currencyCode = project.defaultCurrency
+        developerIcon = project.developerIcon ?? "building.2.fill"
 
         let appearance = UINavigationBarAppearance()
         appearance.configureWithDefaultBackground()
@@ -41,5 +43,6 @@ final class ThemeManager: ObservableObject {
         logoURL = nil
         developerName = "PropHub"
         currencyCode = "AED"
+        developerIcon = "building.2.fill"
     }
 }

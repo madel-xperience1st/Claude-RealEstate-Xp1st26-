@@ -7,12 +7,12 @@ struct StatusBadge: View {
 
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 10, weight: .semibold))
+            .font(.system(size: 10, weight: .bold))
             .tracking(0.5)
             .foregroundStyle(color)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(color.opacity(0.12), in: Capsule())
+            .background(color.opacity(0.10), in: Capsule())
             .accessibilityLabel(text)
     }
 

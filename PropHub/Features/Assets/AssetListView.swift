@@ -85,10 +85,10 @@ struct AssetRow: View {
 
     private func colorForWarrantyStatus(_ status: String) -> Color {
         switch status.lowercased() {
-        case "active": return .green
-        case "expiring soon": return .orange
-        case "expired": return .red
-        default: return .gray
+        case "active": return .brandEmerald
+        case "expiring soon": return .brandGold
+        case "expired": return .brandCoral
+        default: return .brandGray
         }
     }
 }

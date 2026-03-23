@@ -56,7 +56,7 @@ struct ServiceRequestListContent: View {
                     NavigationLink(value: AppRouter.Destination.serviceRequestDetail(requestId: request.id)) {
                         ServiceRequestListRow(request: request)
                     }
-                    .listRowBackground(Color.brandWhite)
+                    .listRowBackground(Color(.systemBackground))
                 }
             }
             .listStyle(.plain)
@@ -67,7 +67,7 @@ struct ServiceRequestListContent: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { createFormBinding.wrappedValue = true } label: {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(.brandNavy)
+                        .foregroundStyle(themeManager.primaryColor)
                 }
             }
         }
@@ -106,44 +106,44 @@ struct ServiceRequestListRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(request.caseNumber)
-                    .font(.caption)
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.brandGold)
                 Spacer()
                 StatusBadge.forServiceStatus(request.status)
             }
 
             Text(request.subject)
-                .font(.subheadline.weight(.medium))
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.brandCharcoal)
                 .lineLimit(2)
 
             HStack {
                 HStack(spacing: 4) {
                     Image(systemName: "tag")
-                        .font(.caption2)
+                        .font(.system(size: 10))
                         .foregroundStyle(.brandGold)
                     Text(request.category)
-                        .font(.caption)
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.brandGray)
                 }
                 Spacer()
                 Text(request.createdDate.relativeFormatted)
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.brandGray)
             }
 
             if let technician = request.assignedTechnician {
                 HStack(spacing: 4) {
                     Image(systemName: "person.fill")
-                        .font(.caption2)
+                        .font(.system(size: 10))
                         .foregroundStyle(.brandSky)
                     Text(technician)
-                        .font(.caption)
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.brandSky)
                 }
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
     }
 }
 
@@ -164,8 +164,8 @@ struct ServiceRequestDetailView: View {
                         VStack(spacing: 14) {
                             HStack {
                                 Text(request.caseNumber)
-                                    .font(.headline)
-                                    .foregroundStyle(.brandGold)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(themeManager.secondaryColor)
                                 Spacer()
                                 StatusBadge.forServiceStatus(request.status)
                             }
@@ -189,8 +189,8 @@ struct ServiceRequestDetailView: View {
                         .padding(18)
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(.white)
-                                .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                         )
 
                         // Description Card
@@ -199,15 +199,15 @@ struct ServiceRequestDetailView: View {
                                 SectionHeader(title: "Description", icon: "doc.text")
 
                                 Text(desc)
-                                    .font(.body)
+                                    .font(.system(size: 15, weight: .regular))
                                     .foregroundStyle(.brandCharcoal)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .padding(18)
                             .background(
                                 RoundedRectangle(cornerRadius: 18)
-                                    .fill(.white)
-                                    .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                                    .fill(Color(.systemBackground))
+                                    .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                             )
                         }
 
@@ -220,11 +220,11 @@ struct ServiceRequestDetailView: View {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(asset.name)
-                                                .font(.subheadline.weight(.medium))
+                                                .font(.system(size: 14, weight: .medium))
                                                 .foregroundStyle(.brandCharcoal)
                                             if let serial = asset.serialNumber {
                                                 Text(serial)
-                                                    .font(.caption)
+                                                    .font(.system(size: 12, weight: .regular))
                                                     .foregroundStyle(.brandGray)
                                             }
                                         }
@@ -235,8 +235,8 @@ struct ServiceRequestDetailView: View {
                                 .padding(18)
                                 .background(
                                     RoundedRectangle(cornerRadius: 18)
-                                        .fill(.white)
-                                        .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                                        .fill(Color(.systemBackground))
+                                        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
                                 )
                             }
                         }
@@ -248,12 +248,18 @@ struct ServiceRequestDetailView: View {
                             HStack {
                                 Image(systemName: "phone.fill")
                                 Text("Contact Support")
-                                    .font(.headline)
+                                    .font(.system(size: 16, weight: .semibold))
                             }
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 54)
-                            .background(Color.brandNavy)
+                            .background(
+                                LinearGradient(
+                                    colors: [themeManager.primaryColor, themeManager.primaryColor.opacity(0.85)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 14))
                         }
                         .padding(.bottom, 20)
@@ -280,15 +286,15 @@ struct ServiceRequestDetailView: View {
     private func infoRow(label: String, value: String, icon: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.caption)
-                .foregroundStyle(.brandGold)
+                .font(.system(size: 12))
+                .foregroundStyle(themeManager.secondaryColor)
                 .frame(width: 20)
             Text(label)
-                .font(.subheadline)
+                .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(.brandGray)
             Spacer()
             Text(value)
-                .font(.subheadline.weight(.medium))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.brandCharcoal)
         }
     }

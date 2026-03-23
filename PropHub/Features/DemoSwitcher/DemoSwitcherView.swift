@@ -83,60 +83,63 @@ struct DemoProjectCard: View {
     let project: DemoProject
     let onSelect: () -> Void
 
+    private var primaryColor: Color { Color(hex: project.brandPrimaryColor) }
+    private var secondaryColor: Color { Color(hex: project.brandSecondaryColor) }
+
     var body: some View {
         Button(action: onSelect) {
-            VStack(spacing: 14) {
-                // Developer Logo
+            VStack(spacing: 0) {
+                // Mini hero gradient
                 ZStack {
+                    LinearGradient(
+                        colors: [primaryColor, primaryColor.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .frame(height: 80)
+
+                    // Decorative circle
                     Circle()
-                        .fill(Color(hex: project.brandPrimaryColor).opacity(0.1))
-                        .frame(width: 64, height: 64)
+                        .fill(secondaryColor.opacity(0.12))
+                        .frame(width: 60, height: 60)
+                        .offset(x: 40, y: -10)
 
-                    KFImage(URL(string: project.logoUrl))
-                        .placeholder {
-                            Image(systemName: "building.2.fill")
-                                .font(.system(size: 24))
-                                .foregroundStyle(Color(hex: project.brandPrimaryColor))
-                        }
-                        .onFailure { _ in }
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 36, height: 36)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    Image(systemName: project.developerIcon ?? "building.2.fill")
+                        .font(.system(size: 24, weight: .light))
+                        .foregroundStyle(secondaryColor.opacity(0.6))
                 }
+                .clipShape(
+                    UnevenRoundedRectangle(topLeadingRadius: 18, topTrailingRadius: 18)
+                )
 
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     Text(project.developer.uppercased())
-                        .font(.system(size: 9, weight: .medium))
+                        .font(.system(size: 9, weight: .semibold))
                         .tracking(2)
                         .foregroundStyle(.brandGray)
                         .lineLimit(1)
 
                     Text(project.name)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.brandCharcoal)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
 
                     if let count = project.unitCount {
                         Text("\(count) units")
-                            .font(.caption2)
-                            .foregroundStyle(.brandGold)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(secondaryColor)
                     }
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 14)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-            .padding(.horizontal, 12)
             .background(
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(.white)
-                    .shadow(color: .black.opacity(0.06), radius: 10, y: 5)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.08), radius: 14, y: 6)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color(hex: project.brandPrimaryColor).opacity(0.15), lineWidth: 1)
-            )
+            .clipShape(RoundedRectangle(cornerRadius: 18))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(project.developer) \(project.name)")

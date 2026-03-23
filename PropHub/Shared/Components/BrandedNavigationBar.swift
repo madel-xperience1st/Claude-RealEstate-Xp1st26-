@@ -11,23 +11,28 @@ struct BrandedNavigationBar: View {
             if let logoURL = themeManager.logoURL {
                 KFImage(logoURL)
                     .placeholder { brandIcon }
+                    .onFailure { _ in }
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 30, height: 30)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .frame(width: 32, height: 32)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(.systemBackground))
+                    )
             } else {
                 brandIcon
             }
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(themeManager.developerName)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.brandCharcoal)
                     .lineLimit(1)
                 if let projectName = themeManager.activeProject?.name {
                     Text(projectName)
-                        .font(.caption2)
-                        .foregroundStyle(.brandGold)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(themeManager.secondaryColor)
                         .lineLimit(1)
                 }
             }
@@ -36,22 +41,31 @@ struct BrandedNavigationBar: View {
 
             Button(action: onSwitchDemo) {
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.subheadline)
-                    .foregroundStyle(.brandNavy)
-                    .padding(6)
-                    .background(Circle().fill(Color.brandPlatinum))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(themeManager.primaryColor)
+                    .padding(8)
+                    .background(
+                        Circle()
+                            .fill(themeManager.primaryColor.opacity(0.08))
+                    )
             }
         }
     }
 
     private var brandIcon: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color.brandNavy)
-                .frame(width: 30, height: 30)
-            Image(systemName: "building.2.fill")
-                .font(.caption)
-                .foregroundStyle(.brandGold)
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    LinearGradient(
+                        colors: [themeManager.primaryColor, themeManager.primaryColor.opacity(0.8)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 32, height: 32)
+            Image(systemName: themeManager.developerIcon)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(themeManager.secondaryColor)
         }
     }
 }

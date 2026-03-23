@@ -29,7 +29,7 @@ struct UnitListView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showDemoSwitcher = true } label: {
                         Image(systemName: "arrow.triangle.2.circlepath")
-                            .foregroundStyle(.brandNavy)
+                            .foregroundStyle(themeManager.primaryColor)
                     }
                 }
             }
@@ -59,90 +59,90 @@ struct UnitListView: View {
     }
 }
 
-/// Premium unit card with clean layout and progress indicator.
+/// Premium unit card with hero image area and clean layout.
 struct UnitCardView: View {
     let unit: Unit
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header row
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(unit.unitNumber)
-                        .font(.headline)
-                        .foregroundStyle(.brandCharcoal)
-                    Text(unit.building)
-                        .font(.caption)
-                        .foregroundStyle(.brandGray)
-                }
-                Spacer()
-                StatusBadge.forUnitStatus(unit.status)
-            }
+        VStack(alignment: .leading, spacing: 0) {
+            // Hero image area
+            UnitHeroCard(unit: unit)
 
-            Divider()
-
-            // Details grid
-            HStack(spacing: 0) {
-                unitDetail(icon: "arrow.up.to.line", label: "Floor \(unit.floor)")
-                Spacer()
-                unitDetail(icon: "square.split.2x2", label: unit.unitType)
-                Spacer()
-                unitDetail(icon: "ruler", label: "\(Int(unit.areaSqm)) sqm")
-            }
-
-            if let handoverDate = unit.handoverDate {
-                HStack(spacing: 6) {
-                    Image(systemName: "calendar")
-                        .font(.caption2)
-                        .foregroundStyle(.brandGold)
-                    Text("Handover: \(handoverDate.mediumFormatted)")
-                        .font(.caption)
-                        .foregroundStyle(.brandGray)
-                }
-            }
-
-            // Payment progress
-            if let completion = unit.paymentCompletion {
-                VStack(spacing: 6) {
-                    HStack {
-                        Text("Payment")
-                            .font(.caption2)
-                            .foregroundStyle(.brandGray)
-                        Spacer()
-                        Text("\(Int(completion * 100))%")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(themeManager.primaryColor)
-                    }
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.brandPlatinum)
-                                .frame(height: 6)
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.goldGradient)
-                                .frame(width: geo.size.width * completion, height: 6)
+            VStack(alignment: .leading, spacing: 12) {
+                // Status row
+                HStack {
+                    StatusBadge.forUnitStatus(unit.status)
+                    Spacer()
+                    if let handoverDate = unit.handoverDate {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 10))
+                                .foregroundStyle(themeManager.secondaryColor)
+                            Text(handoverDate.mediumFormatted)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.brandGray)
                         }
                     }
-                    .frame(height: 6)
+                }
+
+                // Details row
+                HStack(spacing: 16) {
+                    unitDetail(icon: "arrow.up.to.line", label: "Floor \(unit.floor)")
+                    unitDetail(icon: "square.split.2x2", label: unit.unitType)
+                    unitDetail(icon: "ruler", label: "\(Int(unit.areaSqm)) sqm")
+                    Spacer()
+                }
+
+                // Payment progress
+                if let completion = unit.paymentCompletion {
+                    VStack(spacing: 6) {
+                        HStack {
+                            Text("Payment")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(.brandGray)
+                            Spacer()
+                            Text("\(Int(completion * 100))%")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(themeManager.primaryColor)
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(Color.brandPlatinum)
+                                    .frame(height: 5)
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [themeManager.primaryColor, themeManager.secondaryColor],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .frame(width: geo.size.width * completion, height: 5)
+                            }
+                        }
+                        .frame(height: 5)
+                    }
                 }
             }
+            .padding(16)
         }
-        .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(.white)
-                .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
         )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
     private func unitDetail(icon: String, label: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.caption2)
-                .foregroundStyle(.brandGold)
+                .font(.system(size: 10))
+                .foregroundStyle(themeManager.secondaryColor)
             Text(label)
-                .font(.caption)
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.brandCharcoal)
         }
     }

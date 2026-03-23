@@ -75,7 +75,13 @@ struct InstallmentView: View {
             }
         }
         .padding(20)
-        .background(Color.premiumGradient)
+        .background(
+            LinearGradient(
+                colors: [themeManager.primaryColor, themeManager.primaryColor.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
     }
 
     private func summaryItem(label: String, amount: Double, color: Color) -> some View {
@@ -93,7 +99,7 @@ struct InstallmentView: View {
         List {
             ForEach(viewModel.installments) { installment in
                 InstallmentRow(installment: installment)
-                    .listRowBackground(Color.brandWhite)
+                    .listRowBackground(Color(.systemBackground))
             }
         }
         .listStyle(.plain)
@@ -133,10 +139,10 @@ struct InstallmentRow: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(installment.milestoneName)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.brandCharcoal)
                 Text(installment.dueDate.mediumFormatted)
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.brandGray)
             }
 

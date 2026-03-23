@@ -13,17 +13,31 @@ struct DemoProject: Codable, Identifiable, Equatable {
     let status: String
     let defaultCurrency: String
     let unitCount: Int?
+    let developerIcon: String?
+    let heroImageName: String?
 
     enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case developer
-        case logoUrl
-        case brandPrimaryColor
-        case brandSecondaryColor
-        case description
-        case status
-        case defaultCurrency
-        case unitCount
+        case id, name, developer, logoUrl
+        case brandPrimaryColor, brandSecondaryColor
+        case description, status, defaultCurrency, unitCount
+        case developerIcon, heroImageName
+    }
+
+    init(id: String, name: String, developer: String, logoUrl: String,
+         brandPrimaryColor: String, brandSecondaryColor: String,
+         description: String?, status: String, defaultCurrency: String,
+         unitCount: Int?, developerIcon: String? = nil, heroImageName: String? = nil) {
+        self.id = id
+        self.name = name
+        self.developer = developer
+        self.logoUrl = logoUrl
+        self.brandPrimaryColor = brandPrimaryColor
+        self.brandSecondaryColor = brandSecondaryColor
+        self.description = description
+        self.status = status
+        self.defaultCurrency = defaultCurrency
+        self.unitCount = unitCount
+        self.developerIcon = developerIcon
+        self.heroImageName = heroImageName
     }
 }
