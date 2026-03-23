@@ -194,20 +194,22 @@ struct ServiceRequestDetailView: View {
                         )
 
                         // Description Card
-                        VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(title: "Description", icon: "doc.text")
+                        if let desc = request.description, !desc.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeader(title: "Description", icon: "doc.text")
 
-                            Text(request.description)
-                                .font(.body)
-                                .foregroundStyle(.brandCharcoal)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(desc)
+                                    .font(.body)
+                                    .foregroundStyle(.brandCharcoal)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding(18)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(.white)
+                                    .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                            )
                         }
-                        .padding(18)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18)
-                                .fill(.white)
-                                .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
-                        )
 
                         // Related Asset
                         if request.relatedAssetId != nil {
@@ -220,9 +222,11 @@ struct ServiceRequestDetailView: View {
                                             Text(asset.name)
                                                 .font(.subheadline.weight(.medium))
                                                 .foregroundStyle(.brandCharcoal)
-                                            Text(asset.serialNumber)
-                                                .font(.caption)
-                                                .foregroundStyle(.brandGray)
+                                            if let serial = asset.serialNumber {
+                                                Text(serial)
+                                                    .font(.caption)
+                                                    .foregroundStyle(.brandGray)
+                                            }
                                         }
                                         Spacer()
                                         StatusBadge(text: asset.warrantyStatus, color: warrantyColor(asset.warrantyStatus))
