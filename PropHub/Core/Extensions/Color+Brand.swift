@@ -84,6 +84,21 @@ extension Color {
     }
 }
 
+// MARK: - ShapeStyle convenience so .brandGold works in foregroundStyle/tint
+
+extension ShapeStyle where Self == Color {
+    static var brandNavy: Color { Color.brandNavy }
+    static var brandGold: Color { Color.brandGold }
+    static var brandChampagne: Color { Color.brandChampagne }
+    static var brandWhite: Color { Color.brandWhite }
+    static var brandPlatinum: Color { Color.brandPlatinum }
+    static var brandEmerald: Color { Color.brandEmerald }
+    static var brandCoral: Color { Color.brandCoral }
+    static var brandSky: Color { Color.brandSky }
+    static var brandGray: Color { Color.brandGray }
+    static var brandCharcoal: Color { Color.brandCharcoal }
+}
+
 extension Array {
     subscript(safe index: Index) -> Element? {
         indices.contains(index) ? self[index] : nil
