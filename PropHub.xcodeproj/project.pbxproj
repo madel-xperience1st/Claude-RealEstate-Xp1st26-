@@ -65,6 +65,7 @@
 		2DB76DA5B3FA22552F1BF7F3 /* UnitListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CCE9B9F961B307B815DF5B /* UnitListView.swift */; };
 		D4325E70F6EC996A4337CC4F /* UnitListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 035BD4F5997A4445DF2A0F1E /* UnitListViewModel.swift */; };
 		F081586756CCD02A061D7C8E /* BrandedNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06D5E110F4B4F2F1A48CD03 /* BrandedNavigationBar.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* ProjectHeroImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E7F8091A2B3C4D5E6F7081 /* ProjectHeroImage.swift */; };
 		2C903C2D825E4A34383699DA /* CurrencyText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000695DFCC743CB9A124E95E /* CurrencyText.swift */; };
 		9E57DBFEBF7E2101FCD5BCCF /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 395B6599AB2C4A6546037C2D /* EmptyStateView.swift */; };
 		2531F3612F42D1F04EA1396B /* LoadingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6220D52E76615913556D6A /* LoadingOverlay.swift */; };
@@ -137,6 +138,7 @@
 		64CCE9B9F961B307B815DF5B /* UnitListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitListView.swift"; sourceTree = "<group>"; };
 		035BD4F5997A4445DF2A0F1E /* UnitListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnitListViewModel.swift"; sourceTree = "<group>"; };
 		E06D5E110F4B4F2F1A48CD03 /* BrandedNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BrandedNavigationBar.swift"; sourceTree = "<group>"; };
+		D6E7F8091A2B3C4D5E6F7081 /* ProjectHeroImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProjectHeroImage.swift"; sourceTree = "<group>"; };
 		000695DFCC743CB9A124E95E /* CurrencyText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CurrencyText.swift"; sourceTree = "<group>"; };
 		395B6599AB2C4A6546037C2D /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmptyStateView.swift"; sourceTree = "<group>"; };
 		DE6220D52E76615913556D6A /* LoadingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoadingOverlay.swift"; sourceTree = "<group>"; };
@@ -430,6 +432,7 @@
 				000695DFCC743CB9A124E95E /* CurrencyText.swift */,
 				395B6599AB2C4A6546037C2D /* EmptyStateView.swift */,
 				DE6220D52E76615913556D6A /* LoadingOverlay.swift */,
+				D6E7F8091A2B3C4D5E6F7081 /* ProjectHeroImage.swift */,
 				7B307BD01DA491AFBF7E6FCA /* StatusBadge.swift */,
 			);
 			path = "Components";
@@ -575,6 +578,7 @@
 				2C903C2D825E4A34383699DA /* CurrencyText.swift in Sources */,
 				9E57DBFEBF7E2101FCD5BCCF /* EmptyStateView.swift in Sources */,
 				2531F3612F42D1F04EA1396B /* LoadingOverlay.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* ProjectHeroImage.swift in Sources */,
 				9F01B78CE639C2911A672C29 /* StatusBadge.swift in Sources */,
 				C2AE6F9494B0F95E8F90F3C3 /* ThemeManager.swift in Sources */,
 			);
