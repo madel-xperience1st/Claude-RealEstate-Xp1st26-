@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.prophub</groupId>
+    <artifactId>prophub-api</artifactId>
+    <version>1.0.0</version>
+    <packaging>mule-application</packaging>
+    <name>prophub-api</name>
+    <description>PropHub Real Estate Experience API - Salesforce Integration</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <app.runtime>4.6.0</app.runtime>
+        <mule.maven.plugin.version>4.1.1</mule.maven.plugin.version>
+        <munit.version>3.1.0</munit.version>
+        <salesforce.connector.version>10.18.0</salesforce.connector.version>
+        <http.connector.version>1.9.0</http.connector.version>
+        <apikit.version>1.10.0</apikit.version>
+        <secure.properties.version>1.2.7</secure.properties.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.mule.tools.maven</groupId>
+                <artifactId>mule-maven-plugin</artifactId>
+                <version>${mule.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <cloudHubDeployment>
+                        <uri>https://anypoint.mulesoft.com</uri>
+                        <muleVersion>${app.runtime}</muleVersion>
+                        <username>${anypoint.username}</username>
+                        <password>${anypoint.password}</password>
+                        <applicationName>${cloudhub.app.name}</applicationName>
+                        <environment>${cloudhub.environment}</environment>
+                        <region>${cloudhub.region}</region>
+                        <workerType>MICRO</workerType>
+                        <workers>1</workers>
+                        <objectStoreV2>true</objectStoreV2>
+                        <properties>
+                            <mule.env>${mule.env}</mule.env>
+                            <anypoint.platform.client_id>${anypoint.platform.client_id}</anypoint.platform.client_id>
+                            <anypoint.platform.client_secret>${anypoint.platform.client_secret}</anypoint.platform.client_secret>
+                        </properties>
+                    </cloudHubDeployment>
+                    <cloudHub2Deployment>
+                        <uri>https://anypoint.mulesoft.com</uri>
+                        <provider>MC</provider>
+                        <environment>${cloudhub.environment}</environment>
+                        <target>${cloudhub2.target}</target>
+                        <muleVersion>${app.runtime}</muleVersion>
+                        <username>${anypoint.username}</username>
+                        <password>${anypoint.password}</password>
+                        <applicationName>${cloudhub.app.name}</applicationName>
+                        <replicas>1</replicas>
+                        <vCores>0.1</vCores>
+                        <properties>
+                            <mule.env>${mule.env}</mule.env>
+                        </properties>
+                    </cloudHub2Deployment>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Salesforce Connector -->
+        <dependency>
+            <groupId>com.mulesoft.connectors</groupId>
+            <artifactId>mule-salesforce-connector</artifactId>
+            <version>${salesforce.connector.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- HTTP Connector -->
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-http-connector</artifactId>
+            <version>${http.connector.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- APIKit Module (REST routing from RAML) -->
+        <dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-apikit-module</artifactId>
+            <version>${apikit.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- Secure Properties (encrypted credentials) -->
+        <dependency>
+            <groupId>com.mulesoft.modules</groupId>
+            <artifactId>mule-secure-configuration-property-module</artifactId>
+            <version>${secure.properties.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- ObjectStore Connector (token caching) -->
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-objectstore-connector</artifactId>
+            <version>1.2.2</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+
+        <!-- MUnit Testing -->
+        <dependency>
+            <groupId>com.mulesoft.munit</groupId>
+            <artifactId>munit-runner</artifactId>
+            <version>${munit.version}</version>
+            <classifier>mule-plugin</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mulesoft.munit</groupId>
+            <artifactId>munit-tools</artifactId>
+            <version>${munit.version}</version>
+            <classifier>mule-plugin</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>anypoint-exchange-v3</id>
+            <name>Anypoint Exchange V3</name>
+            <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>mulesoft-releases</id>
+            <name>MuleSoft Releases</name>
+            <url>https://repository.mulesoft.org/releases/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>mulesoft-enterprise</id>
+            <name>MuleSoft Enterprise</name>
+            <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>mulesoft-releases</id>
+            <name>MuleSoft Releases</name>
+            <url>https://repository.mulesoft.org/releases/</url>
+            <layout>default</layout>
+        </pluginRepository>
+        <pluginRepository>
+            <id>mulesoft-enterprise</id>
+            <name>MuleSoft Enterprise</name>
+            <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
+            <layout>default</layout>
+        </pluginRepository>
+    </pluginRepositories>
+</project>

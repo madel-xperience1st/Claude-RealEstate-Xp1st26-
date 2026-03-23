@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}/assets                     -->
+    <!-- List all registered assets for a unit          -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId)\assets:PropHub_API_Config">
+        <logger level="INFO" message="List assets for unit: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-list-assets" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /assets/{assetId}                          -->
+    <!-- Get full asset detail                          -->
+    <!-- ============================================ -->
+    <flow name="get:\assets\(assetId):PropHub_API_Config">
+        <logger level="INFO" message="Asset detail: #[attributes.uriParams.assetId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="assetId" value="#[attributes.uriParams.assetId]" />
+
+        <flow-ref name="process-asset-detail" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /assets/{assetId}/warranty                 -->
+    <!-- Get warranty details                           -->
+    <!-- ============================================ -->
+    <flow name="get:\assets\(assetId)\warranty:PropHub_API_Config">
+        <logger level="INFO" message="Asset warranty: #[attributes.uriParams.assetId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="assetId" value="#[attributes.uriParams.assetId]" />
+
+        <flow-ref name="process-asset-warranty" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /assets/{assetId}/maintenance              -->
+    <!-- List maintenance records (work orders)         -->
+    <!-- ============================================ -->
+    <flow name="get:\assets\(assetId)\maintenance:PropHub_API_Config">
+        <logger level="INFO" message="Asset maintenance: #[attributes.uriParams.assetId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="assetId" value="#[attributes.uriParams.assetId]" />
+
+        <flow-ref name="process-asset-maintenance" />
+    </flow>
+
+</mule>

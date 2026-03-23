@@ -1,0 +1,28 @@
+# Environment credentials - NEVER commit
+.env
+!.env.template
+*.env.local
+
+# Maven build output
+**/target/
+*.jar
+*.class
+
+# IDE files
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+
+# MuleSoft Studio
+.mule/
+*.dat
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

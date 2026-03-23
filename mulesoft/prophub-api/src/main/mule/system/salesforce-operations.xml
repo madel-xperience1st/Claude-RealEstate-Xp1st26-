@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+        http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+
+    <!-- ================================================================ -->
+    <!--                    AUTHENTICATION QUERIES                         -->
+    <!-- ================================================================ -->
+
+    <!-- Query Presales_User__mdt by email for whitelist check -->
+    <sub-flow name="system-query-presales-user">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Presales Users">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT DeveloperName, Google_Email__c, Display_Name__c, Role__c, Is_Active__c
+                FROM Presales_User__mdt
+                WHERE Google_Email__c = ':demoEmail'
+                AND Is_Active__c = true
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="demoEmail" value="#[vars.demoEmail]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query Contact by email -->
+    <sub-flow name="system-query-contact-by-email">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Contact by Email">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Email, PropHub_User_Id__c, Active_Demo_Project__c
+                FROM Contact
+                WHERE Email = ':email'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="email" value="#[vars.demoEmail]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    PROJECT QUERIES                                -->
+    <!-- ================================================================ -->
+
+    <!-- Query all active Demo Projects with unit counts -->
+    <sub-flow name="system-query-projects">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Active Projects">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Developer_Name__c, Brand_Primary_Color__c,
+                       Brand_Secondary_Color__c, Brand_Logo_URL__c, Description__c,
+                       Status__c, Default_Currency__c,
+                       (SELECT Id FROM Units__r)
+                FROM Demo_Project__c
+                WHERE Status__c = 'Active'
+                ORDER BY Name ASC
+            ]]></salesforce:salesforce-query>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query single project detail with unit breakdown -->
+    <sub-flow name="system-query-project-detail">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Project Detail">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Developer_Name__c, Brand_Primary_Color__c,
+                       Brand_Secondary_Color__c, Brand_Logo_URL__c, Description__c,
+                       Status__c, Default_Currency__c,
+                       (SELECT Id, Unit_Number__c, Status__c FROM Units__r)
+                FROM Demo_Project__c
+                WHERE Id = ':projectId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="projectId" value="#[vars.projectId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    UNIT QUERIES                                   -->
+    <!-- ================================================================ -->
+
+    <!-- Query units by project and contact, with optional status filter -->
+    <sub-flow name="system-query-units-by-project">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var baseQuery = "SELECT Id, Unit_Number__c, Building__c, Floor__c, Area_SQM__c, " ++
+    "Area_SQFT__c, Unit_Type__c, Status__c, Handover_Date__c, Total_Price__c, " ++
+    "Floor_Plan_URL__c, Payment_Completion__c, Demo_Project__c, Demo_Project__r.Name " ++
+    "FROM Unit__c " ++
+    "WHERE Demo_Project__c = '" ++ vars.projectId ++ "' " ++
+    "AND Owner_Contact__c = '" ++ vars.contactId ++ "'"
+var statusClause = if (vars.statusFilter != null) " AND Status__c = '" ++ vars.statusFilter ++ "'" else ""
+---
+baseQuery ++ statusClause ++ " ORDER BY Building__c, Floor__c"]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Units by Project">
+            <salesforce:salesforce-query>#[payload]</salesforce:salesforce-query>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query single unit detail with project branding -->
+    <sub-flow name="system-query-unit-detail">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Unit Detail">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Unit_Number__c, Building__c, Floor__c, Area_SQM__c,
+                       Area_SQFT__c, Unit_Type__c, Status__c, Handover_Date__c,
+                       Total_Price__c, Floor_Plan_URL__c, Payment_Completion__c,
+                       Demo_Project__c, Demo_Project__r.Name,
+                       Demo_Project__r.Brand_Primary_Color__c,
+                       Demo_Project__r.Brand_Secondary_Color__c,
+                       Owner_Contact__c, Owner_Contact__r.Name
+                FROM Unit__c
+                WHERE Id = ':unitId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="unitId" value="#[vars.unitId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    FINANCE QUERIES                                -->
+    <!-- ================================================================ -->
+
+    <!-- Query installments for a unit -->
+    <sub-flow name="system-query-installments">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Installments">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Milestone_Name__c, Due_Date__c, Amount__c,
+                       Status__c, Paid_Date__c, Penalty_Amount__c, Sort_Order__c
+                FROM Installment__c
+                WHERE Unit__c = ':unitId'
+                ORDER BY Sort_Order__c ASC
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="unitId" value="#[vars.unitId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query invoices for a unit -->
+    <sub-flow name="system-query-invoices">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Invoices">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Invoice_Date__c, Due_Date__c, Amount__c,
+                       Status__c, PDF_Attachment_Id__c
+                FROM Invoice__c
+                WHERE Unit__c = ':unitId'
+                ORDER BY Invoice_Date__c DESC
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="unitId" value="#[vars.unitId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query a single invoice by ID (for PDF download) -->
+    <sub-flow name="system-query-invoice-by-id">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Invoice by ID">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, PDF_Attachment_Id__c
+                FROM Invoice__c
+                WHERE Id = ':invoiceId'
+                AND Unit__c = ':unitId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="invoiceId" value="#[vars.invoiceId]" />
+                <salesforce:parameter key="unitId" value="#[vars.unitId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query ContentVersion for PDF -->
+    <sub-flow name="system-query-content-version">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query ContentVersion">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Title, ContentDocumentId, VersionData
+                FROM ContentVersion
+                WHERE ContentDocumentId = ':contentDocId'
+                AND IsLatest = true
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="contentDocId" value="#[vars.contentDocId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Download ContentVersion body (PDF binary) -->
+    <sub-flow name="system-download-content-body">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Download Content Body">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT VersionData
+                FROM ContentVersion
+                WHERE Id = ':versionId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="versionId" value="#[vars.contentVersionId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/octet-stream
+---
+payload[0].VersionData]]></ee:set-payload>
+                <ee:set-attributes><![CDATA[%dw 2.0
+output application/java
+---
+{
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=invoice.pdf"
+}]]></ee:set-attributes>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    SERVICE REQUEST QUERIES                         -->
+    <!-- ================================================================ -->
+
+    <!-- Query service requests (Cases) for a unit with work orders -->
+    <sub-flow name="system-query-service-requests">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var baseQuery = "SELECT Id, CaseNumber, Subject, Description, Status, Priority, " ++
+    "CreatedDate, ClosedDate, Service_Category__c, Preferred_Service_Date__c, " ++
+    "Related_Asset__c, Related_Asset__r.Name, " ++
+    "(SELECT Id, WorkOrderNumber, Status, StartDate, EndDate, Owner.Name FROM WorkOrders) " ++
+    "FROM Case " ++
+    "WHERE Unit__c = '" ++ vars.unitId ++ "'"
+var statusClause = if (vars.statusFilter != null)
+    (if (vars.statusFilter == "open")
+        " AND Status NOT IN ('Closed', 'Resolved')"
+    else if (vars.statusFilter == "closed")
+        " AND Status IN ('Closed', 'Resolved')"
+    else "")
+    else ""
+---
+baseQuery ++ statusClause ++ " ORDER BY CreatedDate DESC"]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Service Requests">
+            <salesforce:salesforce-query>#[payload]</salesforce:salesforce-query>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query single service request detail -->
+    <sub-flow name="system-query-service-request-detail">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Service Request Detail">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, CaseNumber, Subject, Description, Status, Priority,
+                       CreatedDate, ClosedDate, Service_Category__c, Preferred_Service_Date__c,
+                       Unit__c, Related_Asset__c, Related_Asset__r.Name,
+                       (SELECT Id, WorkOrderNumber, Status, StartDate, EndDate,
+                              Description, Owner.Name FROM WorkOrders)
+                FROM Case
+                WHERE Id = ':requestId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="requestId" value="#[vars.requestId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Create a new Case (service request) -->
+    <sub-flow name="system-create-case">
+        <salesforce:create config-ref="Salesforce_Config"
+                           type="Case"
+                           doc:name="Create Case">
+            <salesforce:records>#[output application/java --- [payload]]</salesforce:records>
+        </salesforce:create>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    id: payload[0].id,
+    success: payload[0].success
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- Create ContentVersion attachment for a Case -->
+    <sub-flow name="system-create-attachment">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var filePart = vars.filePayload.parts.file
+---
+[{
+    Title: filePart.headers."Content-Disposition".filename default "photo.jpg",
+    PathOnClient: filePart.headers."Content-Disposition".filename default "photo.jpg",
+    VersionData: filePart.content as Binary,
+    FirstPublishLocationId: vars.requestId,
+    Description: "Service request photo attachment"
+}]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <salesforce:create config-ref="Salesforce_Config"
+                           type="ContentVersion"
+                           doc:name="Create ContentVersion">
+            <salesforce:records>#[payload]</salesforce:records>
+        </salesforce:create>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    id: payload[0].id,
+    success: payload[0].success
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    ASSET QUERIES                                  -->
+    <!-- ================================================================ -->
+
+    <!-- Query assets for a unit -->
+    <sub-flow name="system-query-assets-by-unit">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Assets by Unit">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Category__c, Manufacturer__c, Serial_Number__c,
+                       Warranty_Start_Date__c, Warranty_End_Date__c, Warranty_Status__c,
+                       InstallDate, Status
+                FROM Asset
+                WHERE Unit__c = ':unitId'
+                ORDER BY Category__c, Name
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="unitId" value="#[vars.unitId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query single asset detail -->
+    <sub-flow name="system-query-asset-detail">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Asset Detail">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Description, Category__c, Manufacturer__c, Serial_Number__c,
+                       Warranty_Start_Date__c, Warranty_End_Date__c, Warranty_Status__c,
+                       InstallDate, Status, Unit__c, Unit__r.Unit_Number__c
+                FROM Asset
+                WHERE Id = ':assetId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="assetId" value="#[vars.assetId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query maintenance work orders for an asset -->
+    <sub-flow name="system-query-asset-maintenance">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Asset Maintenance">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, WorkOrderNumber, Subject, Description, Status, Priority,
+                       StartDate, EndDate, Owner.Name
+                FROM WorkOrder
+                WHERE Related_Asset__c = ':assetId'
+                ORDER BY StartDate DESC
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="assetId" value="#[vars.assetId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    LAUNCH QUERIES                                 -->
+    <!-- ================================================================ -->
+
+    <!-- Query active project launches -->
+    <sub-flow name="system-query-launches">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var baseQuery = "SELECT Id, Name, Demo_Project__c, Demo_Project__r.Name, " ++
+    "Description__c, Price_Range_Min__c, Price_Range_Max__c, " ++
+    "Expected_Handover__c, Hero_Image_URLs__c, Amenities__c, " ++
+    "Launch_Date__c, Is_Active__c, " ++
+    "(SELECT Id FROM Waitlist_Entries__r) " ++
+    "FROM Project_Launch__c " ++
+    "WHERE Is_Active__c = true"
+var projectClause = if (vars.projectIdFilter != null)
+    " AND Demo_Project__c = '" ++ vars.projectIdFilter ++ "'"
+    else ""
+---
+baseQuery ++ projectClause ++ " ORDER BY Launch_Date__c DESC"]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Launches">
+            <salesforce:salesforce-query>#[payload]</salesforce:salesforce-query>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Query single launch detail -->
+    <sub-flow name="system-query-launch-detail">
+        <salesforce:query config-ref="Salesforce_Config" doc:name="Query Launch Detail">
+            <salesforce:salesforce-query><![CDATA[
+                SELECT Id, Name, Demo_Project__c, Demo_Project__r.Name,
+                       Demo_Project__r.Default_Currency__c,
+                       Description__c, Price_Range_Min__c, Price_Range_Max__c,
+                       Expected_Handover__c, Hero_Image_URLs__c, Amenities__c,
+                       Launch_Date__c, Is_Active__c
+                FROM Project_Launch__c
+                WHERE Id = ':launchId'
+                LIMIT 1
+            ]]></salesforce:salesforce-query>
+            <salesforce:parameters>
+                <salesforce:parameter key="launchId" value="#[vars.launchId]" />
+            </salesforce:parameters>
+        </salesforce:query>
+    </sub-flow>
+
+    <!-- Create Waitlist Entry -->
+    <sub-flow name="system-create-waitlist-entry">
+        <salesforce:create config-ref="Salesforce_Config"
+                           type="Waitlist_Entry__c"
+                           doc:name="Create Waitlist Entry">
+            <salesforce:records>#[output application/java --- [payload]]</salesforce:records>
+        </salesforce:create>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    id: payload[0].id,
+    success: payload[0].success
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ================================================================ -->
+    <!--                    CONTACT UPDATES                                -->
+    <!-- ================================================================ -->
+
+    <!-- Update Contact FCM token for push notifications -->
+    <sub-flow name="system-update-fcm-token">
+        <salesforce:update config-ref="Salesforce_Config"
+                           type="Contact"
+                           doc:name="Update FCM Token">
+            <salesforce:records>#[output application/java --- [{
+                Id: vars.contactId,
+                FCM_Token__c: vars.fcmToken
+            }]]</salesforce:records>
+        </salesforce:update>
+    </sub-flow>
+
+</mule>

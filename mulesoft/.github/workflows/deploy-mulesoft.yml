@@ -1,0 +1,142 @@
+# ============================================
+# PropHub MuleSoft API - CI/CD Pipeline
+# ============================================
+# REDEPLOYMENT TO NEW TRIAL ORG:
+# Just update these 3 GitHub Secrets:
+#   - ANYPOINT_USERNAME (new trial login)
+#   - ANYPOINT_PASSWORD (new trial password)
+#   - SF_SECURITY_TOKEN (from new SF org)
+# Then push or trigger manually. Done!
+# ============================================
+
+name: Deploy PropHub MuleSoft API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mulesoft/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - sandbox
+
+env:
+  MULE_ENV: ${{ github.event.inputs.environment || 'dev' }}
+  APP_NAME: prophub-api
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mulesoft/prophub-api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Configure Maven settings
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << 'SETTINGS_EOF'
+          <settings>
+            <servers>
+              <server>
+                <id>anypoint-exchange-v3</id>
+                <username>${{ secrets.ANYPOINT_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>mulesoft-enterprise</id>
+                <username>${{ secrets.MULESOFT_NEXUS_USERNAME }}</username>
+                <password>${{ secrets.MULESOFT_NEXUS_PASSWORD }}</password>
+              </server>
+            </servers>
+          </settings>
+          SETTINGS_EOF
+
+      - name: Build & Package
+        run: mvn clean package -DskipTests
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prophub-api
+          path: mulesoft/prophub-api/target/*.jar
+
+  deploy:
+    name: Deploy to CloudHub
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mulesoft/prophub-api
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Configure Maven settings
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << 'SETTINGS_EOF'
+          <settings>
+            <servers>
+              <server>
+                <id>anypoint-exchange-v3</id>
+                <username>${{ secrets.ANYPOINT_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>mulesoft-enterprise</id>
+                <username>${{ secrets.MULESOFT_NEXUS_USERNAME }}</username>
+                <password>${{ secrets.MULESOFT_NEXUS_PASSWORD }}</password>
+              </server>
+            </servers>
+          </settings>
+          SETTINGS_EOF
+
+      - name: Deploy to CloudHub
+        run: |
+          mvn clean deploy -DmuleDeploy \
+            -Danypoint.username="${{ secrets.ANYPOINT_USERNAME }}" \
+            -Danypoint.password="${{ secrets.ANYPOINT_PASSWORD }}" \
+            -Dcloudhub.app.name="${{ env.APP_NAME }}" \
+            -Dcloudhub.environment="Sandbox" \
+            -Dcloudhub.region="us-east-2" \
+            -Dmule.env="${{ env.MULE_ENV }}" \
+            -DSF_USERNAME="${{ secrets.SF_USERNAME }}" \
+            -DSF_PASSWORD="${{ secrets.SF_PASSWORD }}" \
+            -DSF_SECURITY_TOKEN="${{ secrets.SF_SECURITY_TOKEN }}" \
+            -DSF_DEMO_USER_EMAIL="${{ secrets.SF_DEMO_USER_EMAIL }}" \
+            -DJWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            -DskipTests
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment triggered for ${{ env.APP_NAME }} to CloudHub"
+          echo "Environment: ${{ env.MULE_ENV }}"
+          echo "Check status at: https://anypoint.mulesoft.com/cloudhub/#/console/home/applications"

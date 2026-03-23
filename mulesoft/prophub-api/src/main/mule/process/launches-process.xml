@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Launches                        -->
+    <!-- Active project launches with optional filter   -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-launches">
+        <flow-ref name="system-query-launches" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (launch) -> {
+    id: launch.Id,
+    name: launch.Name,
+    projectId: launch.Demo_Project__c,
+    projectName: launch.Demo_Project__r.Name default "",
+    description: launch.Description__c default "",
+    priceRangeMin: launch.Price_Range_Min__c default 0,
+    priceRangeMax: launch.Price_Range_Max__c default 0,
+    expectedHandover: launch.Expected_Handover__c default "",
+    heroImageUrls: if (launch.Hero_Image_URLs__c != null)
+        (launch.Hero_Image_URLs__c splitBy ",") map trim($)
+    else [],
+    amenities: if (launch.Amenities__c != null)
+        read(launch.Amenities__c, "application/json") default []
+    else [],
+    launchDate: launch.Launch_Date__c,
+    isActive: launch.Is_Active__c default false,
+    waitlistCount: launch.Waitlist_Entries__r.totalSize default 0
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Launch Detail                        -->
+    <!-- ============================================ -->
+    <sub-flow name="process-launch-detail">
+        <flow-ref name="system-query-launch-detail" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0]">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var launch = payload[0]
+---
+{
+    id: launch.Id,
+    name: launch.Name,
+    projectId: launch.Demo_Project__c,
+    projectName: launch.Demo_Project__r.Name default "",
+    description: launch.Description__c default "",
+    priceRangeMin: launch.Price_Range_Min__c default 0,
+    priceRangeMax: launch.Price_Range_Max__c default 0,
+    expectedHandover: launch.Expected_Handover__c default "",
+    heroImageUrls: if (launch.Hero_Image_URLs__c != null)
+        (launch.Hero_Image_URLs__c splitBy ",") map trim($)
+    else [],
+    amenities: if (launch.Amenities__c != null)
+        read(launch.Amenities__c, "application/json") default []
+    else [],
+    launchDate: launch.Launch_Date__c,
+    isActive: launch.Is_Active__c default false,
+    currency: launch.Demo_Project__r.Default_Currency__c default "AED"
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Launch not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Join Waitlist                         -->
+    <!-- Creates Waitlist_Entry__c in Salesforce        -->
+    <!-- ============================================ -->
+    <sub-flow name="process-join-waitlist">
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "Contact__c": vars.waitlistBody.contactId,
+    "Project_Launch__c": vars.waitlistBody.launchId,
+    "Preferred_Unit_Type__c": vars.waitlistBody.preferredUnitType,
+    "Notes__c": vars.waitlistBody.notes,
+    "Registration_Date__c": now() as String {format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"},
+    "Status__c": "Registered"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <flow-ref name="system-create-waitlist-entry" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    id: payload.id,
+    message: "Successfully joined the waitlist"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <set-variable variableName="httpStatus" value="201" />
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Chat Session (Agentforce Proxy)      -->
+    <!-- For demo: returns smart scripted responses     -->
+    <!-- In production: proxies to Agentforce API       -->
+    <!-- ============================================ -->
+    <sub-flow name="process-create-chat-session">
+        <set-variable variableName="sessionId" value="#[uuid()]" />
+
+        <!-- Store session context -->
+        <os:store key="#[vars.sessionId]"
+                  objectStore="Chat_Session_Store"
+                  xmlns:os="http://www.mulesoft.org/schema/mule/os">
+            <os:value>#[output application/json --- {
+                contactId: vars.contactId,
+                projectId: vars.projectId,
+                unitId: vars.unitId
+            }]</os:value>
+        </os:store>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    sessionId: vars.sessionId,
+    welcomeMessage: "Hello! I'm your PropHub assistant. How can I help you today? You can ask me about your unit status, payments, service requests, or upcoming launches."
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <set-variable variableName="httpStatus" value="201" />
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Chat Message                         -->
+    <!-- Keyword-based routing for demo                -->
+    <!-- ============================================ -->
+    <sub-flow name="process-chat-message">
+        <!-- Retrieve session context -->
+        <os:retrieve key="#[vars.sessionId]"
+                     objectStore="Chat_Session_Store"
+                     target="sessionContext"
+                     xmlns:os="http://www.mulesoft.org/schema/mule/os" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var msg = lower(vars.messageText default "")
+var quickReply = vars.quickReplyValue
+---
+{
+    messages: [
+        {
+            text: if (msg contains "payment" or quickReply == "view_payments")
+                    "Your payment summary is available in the Finance tab. You have upcoming installments due. Would you like me to show details?"
+                  else if (msg contains "service" or msg contains "maintenance" or quickReply == "request_service")
+                    "I can help you create a service request. Please go to the Services tab and tap 'New Request', or tell me what issue you're experiencing."
+                  else if (msg contains "unit" or msg contains "status")
+                    "Your unit details and current status are shown on the Dashboard. Is there something specific you'd like to know?"
+                  else if (msg contains "launch" or msg contains "new project")
+                    "Check the New Launches tab for exciting upcoming projects! You can join the waitlist directly from the app."
+                  else if (msg contains "warranty" or msg contains "asset")
+                    "You can view all your unit's assets and their warranty status in the Assets tab."
+                  else
+                    "I understand you're asking about: '" ++ (vars.messageText default "") ++ "'. Let me help you with that. Could you provide more details?",
+            sender: "agent",
+            timestamp: now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"},
+            quickReplies: [
+                { label: "View payments", value: "view_payments" },
+                { label: "Request service", value: "request_service" },
+                { label: "Unit status", value: "unit_status" },
+                { label: "New launches", value: "new_launches" }
+            ]
+        }
+    ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Register Push Token                  -->
+    <!-- Updates Contact.FCM_Token__c in Salesforce    -->
+    <!-- ============================================ -->
+    <sub-flow name="process-register-push-token">
+        <flow-ref name="system-update-fcm-token" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    message: "Push token registered successfully"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+</mule>

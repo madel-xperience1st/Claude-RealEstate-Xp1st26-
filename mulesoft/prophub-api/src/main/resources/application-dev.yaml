@@ -1,0 +1,38 @@
+# ============================================
+# PropHub API - Development Environment
+# ============================================
+# INSTRUCTIONS:
+# 1. Copy this file and rename for your environment
+# 2. Fill in your Salesforce org credentials below
+# 3. NEVER commit real credentials to git
+# 4. For CloudHub deployment, set these as secure properties
+# ============================================
+
+http:
+  port: "8081"
+
+# Salesforce Connection (Username-Password auth - ideal for trials)
+sf:
+  username: "${SF_USERNAME}"
+  password: "${SF_PASSWORD}"
+  security.token: "${SF_SECURITY_TOKEN}"
+  login.url: "https://login.salesforce.com"
+  # For sandbox orgs, use: "https://test.salesforce.com"
+
+  # Demo user email (matched against Presales_User__mdt)
+  demo.user.email: "${SF_DEMO_USER_EMAIL}"
+
+# JWT Configuration (for PropHub token management)
+jwt:
+  secret: "${JWT_SECRET}"
+  expiration: 3600
+
+# Google OAuth (for production - optional for demo)
+google:
+  oauth.clientId: "${GOOGLE_CLIENT_ID}"
+
+# Anypoint Platform (for API Manager autodiscovery)
+anypoint:
+  platform:
+    client_id: "${ANYPOINT_CLIENT_ID}"
+    client_secret: "${ANYPOINT_CLIENT_SECRET}"

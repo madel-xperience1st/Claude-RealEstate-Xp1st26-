@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:os="http://www.mulesoft.org/schema/mule/os"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+        http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+    <!-- ============================================ -->
+    <!-- POST /auth/token                              -->
+    <!-- Exchange Google ID token for PropHub JWT       -->
+    <!-- For presales demo: validates against           -->
+    <!-- Presales_User__mdt custom metadata             -->
+    <!-- ============================================ -->
+    <flow name="post:\auth\token:application\json:PropHub_API_Config">
+        <logger level="INFO" message="Auth token request from: #[payload.googleIdToken[0 to 20]]..." />
+
+        <!-- Extract request body -->
+        <set-variable variableName="googleIdToken" value="#[payload.googleIdToken]" />
+        <set-variable variableName="orgId" value="#[payload.orgId]" />
+
+        <!-- Flow reference to process layer for auth logic -->
+        <flow-ref name="process-auth-token" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- POST /auth/refresh                            -->
+    <!-- Refresh an expired access token               -->
+    <!-- ============================================ -->
+    <flow name="post:\auth\refresh:PropHub_API_Config">
+        <logger level="INFO" message="Token refresh request" />
+
+        <!-- Extract Bearer token from Authorization header -->
+        <set-variable variableName="refreshToken"
+                      value="#[attributes.headers.authorization replace 'Bearer ' with '']" />
+
+        <!-- Validate refresh token exists in store -->
+        <os:contains key="#[vars.refreshToken]"
+                     objectStore="Token_Store"
+                     target="tokenExists" />
+
+        <choice>
+            <when expression="#[vars.tokenExists]">
+                <!-- Retrieve user data and generate new token -->
+                <os:retrieve key="#[vars.refreshToken]"
+                             objectStore="Token_Store"
+                             target="userData" />
+                <flow-ref name="process-generate-jwt" />
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:UNAUTHORIZED"
+                             description="Invalid refresh token" />
+            </otherwise>
+        </choice>
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- POST /auth/logout                             -->
+    <!-- Invalidate the current session                -->
+    <!-- ============================================ -->
+    <flow name="post:\auth\logout:PropHub_API_Config">
+        <logger level="INFO" message="Logout request" />
+
+        <set-variable variableName="token"
+                      value="#[attributes.headers.authorization replace 'Bearer ' with '']" />
+
+        <!-- Remove token from store -->
+        <try>
+            <os:remove key="#[vars.token]" objectStore="Token_Store" />
+            <error-handler>
+                <on-error-continue type="OS:KEY_NOT_FOUND">
+                    <logger level="DEBUG" message="Token already invalidated" />
+                </on-error-continue>
+            </error-handler>
+        </try>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    message: "Logged out successfully"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+
+</mule>

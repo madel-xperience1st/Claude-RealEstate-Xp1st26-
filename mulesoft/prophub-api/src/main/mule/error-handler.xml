@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GLOBAL ERROR HANDLER                          -->
+    <!-- Matches iOS app's APIError format exactly     -->
+    <!-- ============================================ -->
+    <error-handler name="Global_Error_Handler">
+
+        <!-- Bad Request (400) -->
+        <on-error-propagate type="APIKIT:BAD_REQUEST, VALIDATION:INVALID_BOOLEAN, VALIDATION:INVALID_DATE, VALIDATION:INVALID_NUMBER">
+            <set-variable variableName="httpStatus" value="400" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 400,
+        message: "Bad request: " ++ (error.description default "Invalid parameters")
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+        </on-error-propagate>
+
+        <!-- Unauthorized (401) -->
+        <on-error-propagate type="PROPHUB:UNAUTHORIZED">
+            <set-variable variableName="httpStatus" value="401" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 401,
+        message: "Invalid or expired token"
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+        </on-error-propagate>
+
+        <!-- Forbidden (403) -->
+        <on-error-propagate type="PROPHUB:FORBIDDEN">
+            <set-variable variableName="httpStatus" value="403" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 403,
+        message: "Access denied: User not whitelisted"
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+        </on-error-propagate>
+
+        <!-- Not Found (404) -->
+        <on-error-propagate type="APIKIT:NOT_FOUND, PROPHUB:NOT_FOUND">
+            <set-variable variableName="httpStatus" value="404" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 404,
+        message: "Resource not found"
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+        </on-error-propagate>
+
+        <!-- Method Not Allowed (405) -->
+        <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+            <set-variable variableName="httpStatus" value="405" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 405,
+        message: "Method not allowed"
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+        </on-error-propagate>
+
+        <!-- Rate Limited (429) -->
+        <on-error-propagate type="PROPHUB:RATE_LIMITED">
+            <set-variable variableName="httpStatus" value="429" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 429,
+        message: "Too many requests. Please try again later."
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+        </on-error-propagate>
+
+        <!-- Salesforce Connectivity Error -->
+        <on-error-propagate type="SALESFORCE:CONNECTIVITY, SALESFORCE:INVALID_SESSION">
+            <set-variable variableName="httpStatus" value="502" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 502,
+        message: "Upstream service unavailable"
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+            <logger level="ERROR" message="Salesforce connectivity error: #[error.description]" />
+        </on-error-propagate>
+
+        <!-- Catch-all Server Error (500) -->
+        <on-error-propagate type="ANY">
+            <set-variable variableName="httpStatus" value="500" />
+            <ee:transform>
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    error: {
+        code: 500,
+        message: "Internal server error"
+    }
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+            <logger level="ERROR" message="Unhandled error: #[error.description]" />
+        </on-error-propagate>
+
+    </error-handler>
+
+</mule>

@@ -1,0 +1,29 @@
+# ============================================
+# PropHub API - Sandbox Environment
+# ============================================
+# Use for Salesforce Sandbox orgs
+# ============================================
+
+http:
+  port: "8081"
+
+# Salesforce Connection - Sandbox
+sf:
+  username: "${SF_USERNAME}"
+  password: "${SF_PASSWORD}"
+  security.token: "${SF_SECURITY_TOKEN}"
+  login.url: "https://test.salesforce.com"
+
+  demo.user.email: "${SF_DEMO_USER_EMAIL}"
+
+jwt:
+  secret: "${JWT_SECRET}"
+  expiration: 3600
+
+google:
+  oauth.clientId: "${GOOGLE_CLIENT_ID}"
+
+anypoint:
+  platform:
+    client_id: "${ANYPOINT_CLIENT_ID}"
+    client_secret: "${ANYPOINT_CLIENT_SECRET}"

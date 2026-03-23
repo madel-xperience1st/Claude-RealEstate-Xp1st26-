@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Service Requests                -->
+    <!-- Cases linked to a unit with optional filter    -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-service-requests">
+        <flow-ref name="system-query-service-requests" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (sr) -> {
+    id: sr.Id,
+    caseNumber: sr.CaseNumber,
+    subject: sr.Subject,
+    description: sr.Description default "",
+    category: sr.Service_Category__c default "General",
+    status: sr.Status,
+    priority: sr.Priority default "Medium",
+    createdDate: sr.CreatedDate,
+    closedDate: sr.ClosedDate,
+    preferredDate: sr.Preferred_Service_Date__c,
+    relatedAssetId: sr.Related_Asset__c,
+    relatedAssetName: sr.Related_Asset__r.Name default null,
+    workOrders: if (sr.WorkOrders != null)
+        (sr.WorkOrders.records default []) map (wo) -> {
+            id: wo.Id,
+            workOrderNumber: wo.WorkOrderNumber,
+            status: wo.Status,
+            scheduledStart: wo.StartDate,
+            scheduledEnd: wo.EndDate,
+            technicianName: wo.Owner.Name default "Unassigned"
+        }
+    else []
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Create Service Request               -->
+    <!-- Creates a Case in Salesforce                  -->
+    <!-- ============================================ -->
+    <sub-flow name="process-create-service-request">
+        <!-- Transform iOS request body to Salesforce Case fields -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    Subject: vars.requestBody.subject,
+    Description: vars.requestBody.description,
+    "Service_Category__c": vars.requestBody.category,
+    "Unit__c": vars.unitId,
+    "Preferred_Service_Date__c": vars.requestBody.preferredDate,
+    "Related_Asset__c": vars.requestBody.assetId,
+    Status: "New",
+    Origin: "PropHub Mobile App",
+    Priority: "Medium"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <flow-ref name="system-create-case" />
+
+        <!-- Transform SF response to iOS-expected format -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    id: payload.id,
+    message: "Service request created successfully"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <set-variable variableName="httpStatus" value="201" />
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Service Request Detail               -->
+    <!-- Case with related work orders                 -->
+    <!-- ============================================ -->
+    <sub-flow name="process-service-request-detail">
+        <flow-ref name="system-query-service-request-detail" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0]">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var sr = payload[0]
+---
+{
+    id: sr.Id,
+    caseNumber: sr.CaseNumber,
+    subject: sr.Subject,
+    description: sr.Description default "",
+    category: sr.Service_Category__c default "General",
+    status: sr.Status,
+    priority: sr.Priority default "Medium",
+    createdDate: sr.CreatedDate,
+    closedDate: sr.ClosedDate,
+    preferredDate: sr.Preferred_Service_Date__c,
+    unitId: sr.Unit__c,
+    relatedAssetId: sr.Related_Asset__c,
+    relatedAssetName: sr.Related_Asset__r.Name default null,
+    workOrders: if (sr.WorkOrders != null)
+        (sr.WorkOrders.records default []) map (wo) -> {
+            id: wo.Id,
+            workOrderNumber: wo.WorkOrderNumber,
+            status: wo.Status,
+            scheduledStart: wo.StartDate,
+            scheduledEnd: wo.EndDate,
+            technicianName: wo.Owner.Name default "Unassigned",
+            description: wo.Description default ""
+        }
+    else []
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Service request not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Upload Attachment                     -->
+    <!-- Attaches photo to Case via ContentVersion      -->
+    <!-- ============================================ -->
+    <sub-flow name="process-upload-attachment">
+        <!-- Create ContentVersion linked to the Case -->
+        <flow-ref name="system-create-attachment" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    attachmentId: payload.id
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <set-variable variableName="httpStatus" value="201" />
+    </sub-flow>
+
+</mule>

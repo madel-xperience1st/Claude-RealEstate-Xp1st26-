@@ -1,0 +1,370 @@
+#%RAML 1.0
+title: PropHub Experience API
+version: v1
+baseUri: https://{environment}.cloudhub.io/api/v1
+mediaType: application/json
+
+traits:
+  secured:
+    headers:
+      Authorization:
+        description: Bearer JWT token
+        type: string
+        required: true
+        example: "Bearer eyJhbGciOiJIUzI1..."
+  paginated:
+    queryParameters:
+      offset:
+        type: integer
+        required: false
+        default: 0
+      limit:
+        type: integer
+        required: false
+        default: 50
+
+/auth:
+  /token:
+    post:
+      description: Exchange Google ID token for PropHub JWT
+      body:
+        application/json:
+          properties:
+            googleIdToken:
+              type: string
+              required: true
+            orgId:
+              type: string
+              required: true
+          example:
+            googleIdToken: "eyJhbGciOiJSUzI1..."
+            orgId: "00Dxx0000001234"
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                accessToken: "eyJhbGciOiJIUzI1..."
+                refreshToken: "eyJhbGciOiJIUzI1..."
+                expiresIn: 3600
+                user:
+                  id: "user-001"
+                  email: "consultant@example.com"
+                  displayName: "Ahmed Hassan"
+                  role: "Senior Presales"
+                  contactId: "003xx000001234"
+  /refresh:
+    post:
+      description: Refresh an expired access token
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                accessToken: "eyJhbGciOiJIUzI1..."
+                expiresIn: 3600
+  /logout:
+    post:
+      description: Invalidate the current session
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                message: "Logged out successfully"
+
+/projects:
+  get:
+    description: List all active demo projects
+    is: [secured]
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              - id: "proj-001"
+                name: "Emaar Beachfront"
+                developer: "Emaar Properties"
+                logoUrl: "https://example.com/emaar-logo.png"
+                brandPrimaryColor: "#1B4D8E"
+                brandSecondaryColor: "#F5A623"
+                unitCount: 42
+  /{projectId}:
+    get:
+      description: Get full project details with statistics
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+    /units:
+      get:
+        description: List units for a project
+        is: [secured]
+        queryParameters:
+          contactId:
+            type: string
+            required: true
+          status:
+            type: string
+            required: false
+        responses:
+          200:
+            body:
+              application/json:
+
+/units:
+  /{unitId}:
+    get:
+      description: Get full unit detail with payment summary
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+    /installments:
+      get:
+        description: List all installments for a unit
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+    /invoices:
+      get:
+        description: List all invoices for a unit
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+      /{invoiceId}:
+        /pdf:
+          get:
+            description: Download invoice PDF
+            is: [secured]
+            responses:
+              200:
+                body:
+                  application/pdf:
+    /payment-summary:
+      get:
+        description: Get aggregated payment summary
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+                example:
+                  totalPrice: 1500000.00
+                  paidAmount: 750000.00
+                  remainingBalance: 750000.00
+                  nextDueDate: "2025-04-01T00:00:00Z"
+                  overdueCount: 1
+                  overdueAmount: 150000.00
+    /service-requests:
+      get:
+        description: List service requests for a unit
+        is: [secured]
+        queryParameters:
+          status:
+            type: string
+            required: false
+        responses:
+          200:
+            body:
+              application/json:
+      post:
+        description: Create a new service request
+        is: [secured]
+        body:
+          application/json:
+            properties:
+              category:
+                type: string
+              subject:
+                type: string
+              description:
+                type: string
+              preferredDate:
+                type: string
+                required: false
+              assetId:
+                type: string
+                required: false
+        responses:
+          201:
+            body:
+              application/json:
+    /assets:
+      get:
+        description: List all registered assets for a unit
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+
+/service-requests:
+  /{requestId}:
+    get:
+      description: Get full service request details
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+    /attachments:
+      post:
+        description: Upload a photo attachment
+        is: [secured]
+        body:
+          multipart/form-data:
+        responses:
+          201:
+            body:
+              application/json:
+                example:
+                  attachmentId: "068xx000001234"
+
+/assets:
+  /{assetId}:
+    get:
+      description: Get full asset detail
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+    /warranty:
+      get:
+        description: Get warranty details
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+    /maintenance:
+      get:
+        description: List maintenance records
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+
+/chat:
+  /sessions:
+    post:
+      description: Create a new chat session
+      is: [secured]
+      body:
+        application/json:
+          properties:
+            contactId:
+              type: string
+              required: true
+            projectId:
+              type: string
+              required: true
+            unitId:
+              type: string
+              required: false
+      responses:
+        201:
+          body:
+            application/json:
+    /{sessionId}:
+      delete:
+        description: End the chat session
+        is: [secured]
+        responses:
+          200:
+            body:
+              application/json:
+      /messages:
+        post:
+          description: Send a message and receive agent response
+          is: [secured]
+          body:
+            application/json:
+              properties:
+                text:
+                  type: string
+                  required: true
+                quickReplyValue:
+                  type: string
+                  required: false
+          responses:
+            200:
+              body:
+                application/json:
+
+/notifications:
+  /register:
+    post:
+      description: Register FCM device token
+      is: [secured]
+      body:
+        application/json:
+          properties:
+            fcmToken:
+              type: string
+              required: true
+            contactId:
+              type: string
+              required: true
+            platform:
+              type: string
+              required: true
+      responses:
+        200:
+          body:
+            application/json:
+
+/launches:
+  get:
+    description: List active project launches
+    is: [secured]
+    queryParameters:
+      projectId:
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+  /{launchId}:
+    get:
+      description: Get launch detail
+      is: [secured]
+      responses:
+        200:
+          body:
+            application/json:
+
+/waitlist:
+  post:
+    description: Join a project launch waitlist
+    is: [secured]
+    body:
+      application/json:
+        properties:
+          contactId:
+            type: string
+            required: true
+          launchId:
+            type: string
+            required: true
+          preferredUnitType:
+            type: string
+            required: false
+          notes:
+            type: string
+            required: false
+    responses:
+      201:
+        body:
+          application/json:

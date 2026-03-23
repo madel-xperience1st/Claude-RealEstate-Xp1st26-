@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}/service-requests           -->
+    <!-- List service requests for a unit               -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId)\service-requests:PropHub_API_Config">
+        <logger level="INFO" message="List service requests for unit: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+        <set-variable variableName="statusFilter" value="#[attributes.queryParams.status default null]" />
+
+        <flow-ref name="process-list-service-requests" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- POST /units/{unitId}/service-requests          -->
+    <!-- Create a new service request (Case in SF)      -->
+    <!-- ============================================ -->
+    <flow name="post:\units\(unitId)\service-requests:application\json:PropHub_API_Config">
+        <logger level="INFO" message="Create service request for unit: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+        <set-variable variableName="requestBody" value="#[payload]" />
+
+        <flow-ref name="process-create-service-request" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /service-requests/{requestId}              -->
+    <!-- Get full service request details               -->
+    <!-- ============================================ -->
+    <flow name="get:\service-requests\(requestId):PropHub_API_Config">
+        <logger level="INFO" message="Service request detail: #[attributes.uriParams.requestId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="requestId" value="#[attributes.uriParams.requestId]" />
+
+        <flow-ref name="process-service-request-detail" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- POST /service-requests/{requestId}/attachments -->
+    <!-- Upload photo attachment                        -->
+    <!-- ============================================ -->
+    <flow name="post:\service-requests\(requestId)\attachments:multipart\form-data:PropHub_API_Config">
+        <logger level="INFO" message="Upload attachment for request: #[attributes.uriParams.requestId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="requestId" value="#[attributes.uriParams.requestId]" />
+        <set-variable variableName="filePayload" value="#[payload]" />
+
+        <flow-ref name="process-upload-attachment" />
+    </flow>
+
+</mule>

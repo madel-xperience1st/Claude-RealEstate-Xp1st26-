@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}                           -->
+    <!-- Get full unit detail with payment summary     -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId):PropHub_API_Config">
+        <logger level="INFO" message="Unit detail request: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-unit-detail" />
+    </flow>
+
+</mule>

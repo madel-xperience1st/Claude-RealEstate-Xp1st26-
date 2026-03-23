@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GET /projects                                 -->
+    <!-- List all active demo projects                 -->
+    <!-- ============================================ -->
+    <flow name="get:\projects:PropHub_API_Config">
+        <logger level="INFO" message="List projects request" />
+
+        <!-- Validate JWT token -->
+        <flow-ref name="process-validate-token" />
+
+        <!-- Fetch projects from Salesforce via process layer -->
+        <flow-ref name="process-list-projects" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /projects/{projectId}                     -->
+    <!-- Get full project details with statistics       -->
+    <!-- ============================================ -->
+    <flow name="get:\projects\(projectId):PropHub_API_Config">
+        <logger level="INFO" message="Project detail request: #[attributes.uriParams.projectId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="projectId" value="#[attributes.uriParams.projectId]" />
+
+        <flow-ref name="process-project-detail" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /projects/{projectId}/units               -->
+    <!-- List units for a project                      -->
+    <!-- ============================================ -->
+    <flow name="get:\projects\(projectId)\units:PropHub_API_Config">
+        <logger level="INFO" message="List units for project: #[attributes.uriParams.projectId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="projectId" value="#[attributes.uriParams.projectId]" />
+        <set-variable variableName="contactId" value="#[attributes.queryParams.contactId]" />
+        <set-variable variableName="statusFilter" value="#[attributes.queryParams.status default null]" />
+
+        <flow-ref name="process-list-units" />
+    </flow>
+
+</mule>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}/installments               -->
+    <!-- List all installments for a unit               -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId)\installments:PropHub_API_Config">
+        <logger level="INFO" message="List installments for unit: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-list-installments" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}/invoices                   -->
+    <!-- List all invoices for a unit                   -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId)\invoices:PropHub_API_Config">
+        <logger level="INFO" message="List invoices for unit: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-list-invoices" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}/invoices/{invoiceId}/pdf   -->
+    <!-- Download invoice PDF binary                    -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId)\invoices\(invoiceId)\pdf:PropHub_API_Config">
+        <logger level="INFO" message="Invoice PDF download: #[attributes.uriParams.invoiceId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+        <set-variable variableName="invoiceId" value="#[attributes.uriParams.invoiceId]" />
+
+        <flow-ref name="process-invoice-pdf" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /units/{unitId}/payment-summary            -->
+    <!-- Get aggregated payment summary                 -->
+    <!-- ============================================ -->
+    <flow name="get:\units\(unitId)\payment-summary:PropHub_API_Config">
+        <logger level="INFO" message="Payment summary for unit: #[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="unitId" value="#[attributes.uriParams.unitId]" />
+
+        <flow-ref name="process-payment-summary" />
+    </flow>
+
+</mule>

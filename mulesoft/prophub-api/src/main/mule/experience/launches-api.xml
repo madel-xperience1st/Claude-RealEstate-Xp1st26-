@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- GET /launches                                 -->
+    <!-- List active project launches                  -->
+    <!-- ============================================ -->
+    <flow name="get:\launches:PropHub_API_Config">
+        <logger level="INFO" message="List launches request" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="projectIdFilter" value="#[attributes.queryParams.projectId default null]" />
+
+        <flow-ref name="process-list-launches" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- GET /launches/{launchId}                      -->
+    <!-- Get launch detail                             -->
+    <!-- ============================================ -->
+    <flow name="get:\launches\(launchId):PropHub_API_Config">
+        <logger level="INFO" message="Launch detail: #[attributes.uriParams.launchId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="launchId" value="#[attributes.uriParams.launchId]" />
+
+        <flow-ref name="process-launch-detail" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- POST /waitlist                                -->
+    <!-- Join a project launch waitlist                -->
+    <!-- ============================================ -->
+    <flow name="post:\waitlist:application\json:PropHub_API_Config">
+        <logger level="INFO" message="Join waitlist for launch: #[payload.launchId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="waitlistBody" value="#[payload]" />
+
+        <flow-ref name="process-join-waitlist" />
+    </flow>
+
+</mule>

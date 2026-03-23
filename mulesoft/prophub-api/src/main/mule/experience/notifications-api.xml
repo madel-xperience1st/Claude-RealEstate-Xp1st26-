@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- POST /notifications/register                  -->
+    <!-- Register FCM device token for push notifs     -->
+    <!-- ============================================ -->
+    <flow name="post:\notifications\register:application\json:PropHub_API_Config">
+        <logger level="INFO" message="Register push token for contact: #[payload.contactId]" />
+
+        <flow-ref name="process-validate-token" />
+
+        <set-variable variableName="fcmToken" value="#[payload.fcmToken]" />
+        <set-variable variableName="contactId" value="#[payload.contactId]" />
+        <set-variable variableName="platform" value="#[payload.platform]" />
+
+        <flow-ref name="process-register-push-token" />
+    </flow>
+
+</mule>

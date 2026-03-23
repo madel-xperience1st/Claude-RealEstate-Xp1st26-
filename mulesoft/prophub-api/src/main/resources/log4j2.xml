@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%-5p %d [%t] [event: %X{correlationId}] %c - %m%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <!-- PropHub application logging -->
+        <AsyncLogger name="com.prophub" level="INFO" />
+
+        <!-- Salesforce connector logging (set to DEBUG for troubleshooting) -->
+        <AsyncLogger name="org.mule.extension.salesforce" level="WARN" />
+
+        <!-- HTTP connector logging -->
+        <AsyncLogger name="org.mule.extension.http" level="WARN" />
+
+        <!-- MuleSoft core -->
+        <AsyncRoot level="INFO">
+            <AppenderRef ref="Console" />
+        </AsyncRoot>
+    </Loggers>
+</Configuration>

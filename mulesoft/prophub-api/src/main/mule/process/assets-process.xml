@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Assets                          -->
+    <!-- Assets (appliances/fixtures) for a unit        -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-assets">
+        <flow-ref name="system-query-assets-by-unit" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (asset) -> {
+    id: asset.Id,
+    name: asset.Name,
+    category: asset.Category__c default "General",
+    manufacturer: asset.Manufacturer__c default "",
+    serialNumber: asset.Serial_Number__c default "",
+    warrantyStartDate: asset.Warranty_Start_Date__c,
+    warrantyEndDate: asset.Warranty_End_Date__c,
+    warrantyStatus: asset.Warranty_Status__c default "Unknown",
+    installDate: asset.InstallDate,
+    status: asset.Status default "Active"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Asset Detail                         -->
+    <!-- ============================================ -->
+    <sub-flow name="process-asset-detail">
+        <flow-ref name="system-query-asset-detail" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0]">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var asset = payload[0]
+---
+{
+    id: asset.Id,
+    name: asset.Name,
+    category: asset.Category__c default "General",
+    manufacturer: asset.Manufacturer__c default "",
+    serialNumber: asset.Serial_Number__c default "",
+    description: asset.Description default "",
+    warrantyStartDate: asset.Warranty_Start_Date__c,
+    warrantyEndDate: asset.Warranty_End_Date__c,
+    warrantyStatus: asset.Warranty_Status__c default "Unknown",
+    installDate: asset.InstallDate,
+    status: asset.Status default "Active",
+    unitId: asset.Unit__c,
+    unitNumber: asset.Unit__r.Unit_Number__c default ""
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Asset not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Asset Warranty                       -->
+    <!-- ============================================ -->
+    <sub-flow name="process-asset-warranty">
+        <flow-ref name="system-query-asset-detail" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0]">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var asset = payload[0]
+---
+{
+    startDate: asset.Warranty_Start_Date__c,
+    endDate: asset.Warranty_End_Date__c,
+    status: asset.Warranty_Status__c default "Unknown",
+    provider: asset.Manufacturer__c default "Unknown",
+    terms: "Manufacturer warranty covering defects in materials and workmanship. Contact " ++ (asset.Manufacturer__c default "manufacturer") ++ " for claims."
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Asset not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Asset Maintenance                    -->
+    <!-- Work orders related to the asset              -->
+    <!-- ============================================ -->
+    <sub-flow name="process-asset-maintenance">
+        <flow-ref name="system-query-asset-maintenance" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (wo) -> {
+    id: wo.Id,
+    workOrderNumber: wo.WorkOrderNumber,
+    subject: wo.Subject default "",
+    description: wo.Description default "",
+    status: wo.Status,
+    priority: wo.Priority default "Medium",
+    scheduledStart: wo.StartDate,
+    scheduledEnd: wo.EndDate,
+    completedDate: wo.EndDate,
+    technicianName: wo.Owner.Name default "Unassigned"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+</mule>

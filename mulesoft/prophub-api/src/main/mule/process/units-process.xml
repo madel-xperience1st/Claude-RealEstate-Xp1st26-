@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Unit Detail                          -->
+    <!-- Full unit info with project branding           -->
+    <!-- ============================================ -->
+    <sub-flow name="process-unit-detail">
+        <flow-ref name="system-query-unit-detail" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0]">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var unit = payload[0]
+---
+{
+    id: unit.Id,
+    unitNumber: unit.Unit_Number__c,
+    building: unit.Building__c default "",
+    floor: unit.Floor__c default 0,
+    areaSqm: unit.Area_SQM__c default 0,
+    areaSqft: unit.Area_SQFT__c default 0,
+    unitType: unit.Unit_Type__c default "",
+    status: unit.Status__c,
+    handoverDate: unit.Handover_Date__c,
+    totalPrice: unit.Total_Price__c default 0,
+    floorPlanUrl: unit.Floor_Plan_URL__c default "",
+    paymentCompletion: unit.Payment_Completion__c default 0,
+    projectId: unit.Demo_Project__c,
+    projectName: unit.Demo_Project__r.Name default "",
+    projectBrandPrimary: unit.Demo_Project__r.Brand_Primary_Color__c default "#1B4D8E",
+    projectBrandSecondary: unit.Demo_Project__r.Brand_Secondary_Color__c default "#F5A623",
+    ownerContactId: unit.Owner_Contact__c default "",
+    ownerName: unit.Owner_Contact__r.Name default ""
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Unit not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+</mule>

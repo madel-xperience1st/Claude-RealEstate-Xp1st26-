@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Installments                    -->
+    <!-- Sorted by sort order, with status enrichment   -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-installments">
+        <flow-ref name="system-query-installments" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+(payload orderBy $.Sort_Order__c) map (inst) -> {
+    id: inst.Id,
+    milestoneName: inst.Milestone_Name__c,
+    dueDate: inst.Due_Date__c,
+    amount: inst.Amount__c default 0,
+    status: inst.Status__c,
+    paidDate: inst.Paid_Date__c,
+    penaltyAmount: inst.Penalty_Amount__c,
+    sortOrder: inst.Sort_Order__c default 0
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Invoices                        -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-invoices">
+        <flow-ref name="system-query-invoices" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (inv) -> {
+    id: inv.Id,
+    invoiceNumber: inv.Name,
+    invoiceDate: inv.Invoice_Date__c,
+    dueDate: inv.Due_Date__c,
+    amount: inv.Amount__c default 0,
+    status: inv.Status__c,
+    hasPdf: inv.PDF_Attachment_Id__c != null
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Invoice PDF Download                 -->
+    <!-- Fetches ContentVersion from Salesforce         -->
+    <!-- ============================================ -->
+    <sub-flow name="process-invoice-pdf">
+        <!-- First get the invoice to find the ContentDocument ID -->
+        <flow-ref name="system-query-invoice-by-id" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0 and payload[0].PDF_Attachment_Id__c != null]">
+                <set-variable variableName="contentDocId" value="#[payload[0].PDF_Attachment_Id__c]" />
+
+                <!-- Fetch the ContentVersion (latest) for this document -->
+                <flow-ref name="system-query-content-version" />
+
+                <choice>
+                    <when expression="#[sizeOf(payload) > 0]">
+                        <set-variable variableName="contentVersionId" value="#[payload[0].Id]" />
+
+                        <!-- Download the actual file body -->
+                        <flow-ref name="system-download-content-body" />
+                    </when>
+                    <otherwise>
+                        <raise-error type="PROPHUB:NOT_FOUND" description="PDF not found" />
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Invoice or PDF not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Payment Summary                      -->
+    <!-- Aggregates installment data into summary       -->
+    <!-- This is the key business logic flow             -->
+    <!-- ============================================ -->
+    <sub-flow name="process-payment-summary">
+        <!-- Get all installments for the unit -->
+        <flow-ref name="system-query-installments" />
+
+        <!-- Also get the unit's total price -->
+        <set-variable variableName="installments" value="#[payload]" />
+        <flow-ref name="system-query-unit-detail" />
+        <set-variable variableName="unitData" value="#[payload]" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var installments = vars.installments
+var unit = if (sizeOf(vars.unitData) > 0) vars.unitData[0] else null
+var totalPrice = unit.Total_Price__c default 0
+var paidInstallments = installments filter ($.Status__c == "Paid")
+var overdueInstallments = installments filter ($.Status__c == "Overdue")
+var upcomingInstallments = installments filter ($.Status__c == "Upcoming" or $.Status__c == "Pending")
+var paidAmount = sum(paidInstallments map ($.Amount__c default 0))
+var overdueAmount = sum(overdueInstallments map ($.Amount__c default 0))
+var nextDue = (upcomingInstallments orderBy $.Due_Date__c)[0].Due_Date__c default null
+---
+{
+    totalPrice: totalPrice,
+    paidAmount: paidAmount,
+    remainingBalance: totalPrice - paidAmount,
+    nextDueDate: nextDue,
+    overdueCount: sizeOf(overdueInstallments),
+    overdueAmount: overdueAmount,
+    totalInstallments: sizeOf(installments),
+    paidInstallments: sizeOf(paidInstallments),
+    completionPercentage: if (totalPrice > 0) (paidAmount / totalPrice * 100) else 0
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+</mule>

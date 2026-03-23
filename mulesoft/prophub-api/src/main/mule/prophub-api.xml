@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- MAIN HTTP LISTENER + APIKIT ROUTER            -->
+    <!-- Entry point for all iOS app requests          -->
+    <!-- ============================================ -->
+    <flow name="prophub-api-main">
+        <http:listener
+            config-ref="HTTP_Listener_Config"
+            path="/api/v1/*"
+            doc:name="HTTP /api/v1/*" />
+
+        <!-- CORS headers for development -->
+        <set-variable variableName="outboundHeaders" value="#[{
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Authorization, Content-Type, Accept, User-Agent'
+        }]" />
+
+        <apikit:router config-ref="PropHub_API_Config" />
+
+        <error-handler ref="Global_Error_Handler" />
+    </flow>
+
+    <!-- APIKIT Console (development only) -->
+    <flow name="prophub-api-console">
+        <http:listener
+            config-ref="HTTP_Listener_Config"
+            path="/console/*"
+            doc:name="HTTP /console/*" />
+        <apikit:console config-ref="PropHub_API_Config" />
+    </flow>
+
+    <!-- ============================================ -->
+    <!-- HEALTH CHECK                                  -->
+    <!-- ============================================ -->
+    <flow name="health-check">
+        <http:listener
+            config-ref="HTTP_Listener_Config"
+            path="/health"
+            doc:name="HTTP /health"
+            allowedMethods="GET" />
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: "UP",
+    app: "prophub-api",
+    version: "1.0.0",
+    timestamp: now() as String {format: "yyyy-MM-dd'T'HH:mm:ss'Z'"}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+
+</mule>

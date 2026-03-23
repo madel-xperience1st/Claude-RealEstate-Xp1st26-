@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Projects                        -->
+    <!-- Queries SF, transforms to mobile-friendly JSON -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-projects">
+        <!-- Query Salesforce for active projects -->
+        <flow-ref name="system-query-projects" />
+
+        <!-- Transform Salesforce response to iOS-expected format -->
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (project) -> {
+    id: project.Id,
+    name: project.Name,
+    developer: project.Developer_Name__c,
+    logoUrl: project.Brand_Logo_URL__c default "",
+    brandPrimaryColor: project.Brand_Primary_Color__c default "#1B4D8E",
+    brandSecondaryColor: project.Brand_Secondary_Color__c default "#F5A623",
+    description: project.Description__c default "",
+    defaultCurrency: project.Default_Currency__c default "AED",
+    status: project.Status__c,
+    unitCount: project.Units__r.totalSize default 0
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: Project Detail                       -->
+    <!-- Enriches project with unit count and stats     -->
+    <!-- ============================================ -->
+    <sub-flow name="process-project-detail">
+        <!-- Query project with related units count -->
+        <flow-ref name="system-query-project-detail" />
+
+        <choice>
+            <when expression="#[sizeOf(payload) > 0]">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var project = payload[0]
+var units = project.Units__r.records default []
+---
+{
+    id: project.Id,
+    name: project.Name,
+    developer: project.Developer_Name__c,
+    logoUrl: project.Brand_Logo_URL__c default "",
+    brandPrimaryColor: project.Brand_Primary_Color__c default "#1B4D8E",
+    brandSecondaryColor: project.Brand_Secondary_Color__c default "#F5A623",
+    description: project.Description__c default "",
+    defaultCurrency: project.Default_Currency__c default "AED",
+    status: project.Status__c,
+    unitCount: sizeOf(units),
+    unitsByStatus: units groupBy $.Status__c mapObject ((units, status) -> {
+        (status): sizeOf(units)
+    })
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error type="PROPHUB:NOT_FOUND" description="Project not found" />
+            </otherwise>
+        </choice>
+    </sub-flow>
+
+    <!-- ============================================ -->
+    <!-- PROCESS: List Units for Project                -->
+    <!-- Filters by contact and optional status         -->
+    <!-- ============================================ -->
+    <sub-flow name="process-list-units">
+        <flow-ref name="system-query-units-by-project" />
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (unit) -> {
+    id: unit.Id,
+    unitNumber: unit.Unit_Number__c,
+    building: unit.Building__c default "",
+    floor: unit.Floor__c default 0,
+    areaSqm: unit.Area_SQM__c default 0,
+    areaSqft: unit.Area_SQFT__c default 0,
+    unitType: unit.Unit_Type__c default "",
+    status: unit.Status__c,
+    handoverDate: unit.Handover_Date__c,
+    totalPrice: unit.Total_Price__c default 0,
+    floorPlanUrl: unit.Floor_Plan_URL__c default "",
+    paymentCompletion: unit.Payment_Completion__c default 0,
+    projectId: unit.Demo_Project__c,
+    projectName: unit.Demo_Project__r.Name default ""
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </sub-flow>
+
+</mule>
