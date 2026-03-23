@@ -12,13 +12,13 @@ enum MockDataProvider {
             name: "Creek Harbour Residences",
             developer: "Emaar Properties",
             logoUrl: "https://logo.clearbit.com/emaar.com",
-            brandPrimaryColor: "#003366",
-            brandSecondaryColor: "#C8A961",
+            brandPrimaryColor: "#0A1B37",
+            brandSecondaryColor: "#86883F",
             description: "Luxury waterfront living in the heart of Dubai Creek Harbour with stunning views of the Burj Khalifa and Dubai skyline.",
             status: "Active",
             defaultCurrency: "AED",
             unitCount: 48,
-            developerIcon: "building.columns.fill",
+            developerIcon: "building.2.fill",
             heroImageName: "emaar_hero"
         ),
         DemoProject(
@@ -26,13 +26,13 @@ enum MockDataProvider {
             name: "Villette Phase 3",
             developer: "SODIC",
             logoUrl: "https://logo.clearbit.com/sodic.com",
-            brandPrimaryColor: "#1B4332",
-            brandSecondaryColor: "#B8860B",
+            brandPrimaryColor: "#1A1A2E",
+            brandSecondaryColor: "#C5956B",
             description: "Premium villas and townhouses in New Cairo with world-class amenities and lush green spaces.",
             status: "Active",
             defaultCurrency: "EGP",
             unitCount: 32,
-            developerIcon: "leaf.fill",
+            developerIcon: "house.and.flag.fill",
             heroImageName: "sodic_hero"
         ),
         DemoProject(
@@ -40,13 +40,13 @@ enum MockDataProvider {
             name: "DAMAC Lagoons",
             developer: "DAMAC Properties",
             logoUrl: "https://logo.clearbit.com/damacproperties.com",
-            brandPrimaryColor: "#5C0023",
-            brandSecondaryColor: "#C6A44E",
+            brandPrimaryColor: "#0D0D0D",
+            brandSecondaryColor: "#C9A84C",
             description: "Mediterranean-inspired townhouses with crystal lagoons, sandy beaches, and tropical water parks.",
             status: "Active",
             defaultCurrency: "AED",
             unitCount: 56,
-            developerIcon: "diamond.fill",
+            developerIcon: "crown.fill",
             heroImageName: "damac_hero"
         ),
         DemoProject(
@@ -54,13 +54,13 @@ enum MockDataProvider {
             name: "Jeddah Central",
             developer: "Roshn",
             logoUrl: "https://logo.clearbit.com/roshn.sa",
-            brandPrimaryColor: "#006B6B",
+            brandPrimaryColor: "#00894A",
             brandSecondaryColor: "#D4A94D",
             description: "A transformative waterfront community in the heart of Jeddah with modern urban living.",
             status: "Active",
             defaultCurrency: "SAR",
             unitCount: 24,
-            developerIcon: "mountain.2.fill",
+            developerIcon: "leaf.fill",
             heroImageName: "roshn_hero"
         )
     ]
