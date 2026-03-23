@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Chat bubble component with support for quick reply buttons.
+/// Premium chat bubble with navy/gold styling.
 struct ChatBubble: View {
     let message: ChatMessage
     let onQuickReply: (QuickReply) -> Void
@@ -11,16 +11,12 @@ struct ChatBubble: View {
 
             VStack(alignment: message.sender == .user ? .trailing : .leading, spacing: 6) {
                 Text(message.text)
-                    .font(.body)
-                    .foregroundStyle(message.sender == .user ? .white : .primary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(
-                        bubbleColor,
-                        in: RoundedRectangle(cornerRadius: 18)
-                    )
+                    .font(.subheadline)
+                    .foregroundStyle(message.sender == .user ? .white : .brandCharcoal)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(bubbleColor, in: BubbleShape(isUser: message.sender == .user))
 
-                // Quick replies
                 if let quickReplies = message.quickReplies, !quickReplies.isEmpty {
                     FlowLayout(spacing: 8) {
                         ForEach(quickReplies, id: \.value) { reply in
@@ -29,38 +25,53 @@ struct ChatBubble: View {
                             } label: {
                                 Text(reply.label)
                                     .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
+                                    .foregroundStyle(.brandNavy)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 7)
                                     .background(
                                         Capsule()
-                                            .stroke(Color.accentColor, lineWidth: 1)
+                                            .stroke(Color.brandGold, lineWidth: 1)
                                     )
                             }
-                            .accessibilityLabel(reply.label)
                         }
                     }
                 }
 
-                // Timestamp
                 Text(message.timestamp.shortDateTimeFormatted)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.brandGray)
             }
 
             if message.sender != .user { Spacer(minLength: 60) }
         }
-        .accessibilityElement(children: .combine)
     }
 
     private var bubbleColor: Color {
         switch message.sender {
-        case .user:
-            return .blue
-        case .agent:
-            return Color(.systemGray5)
-        case .system:
-            return Color(.systemGray6)
+        case .user: return .brandNavy
+        case .agent: return .brandPlatinum
+        case .system: return Color(hex: "E8E8E5")
         }
+    }
+}
+
+/// Rounded bubble shape with tail.
+struct BubbleShape: Shape {
+    let isUser: Bool
+
+    func path(in rect: CGRect) -> Path {
+        let radius: CGFloat = 18
+        var path = Path()
+        let corners: UIRectCorner = isUser
+            ? [.topLeft, .topRight, .bottomLeft]
+            : [.topLeft, .topRight, .bottomRight]
+        path.addRoundedRect(in: rect, cornerRadii: RectangleCornerRadii(
+            topLeading: radius,
+            bottomLeading: isUser ? radius : 4,
+            bottomTrailing: isUser ? 4 : radius,
+            topTrailing: radius
+        ))
+        return path
     }
 }
 
@@ -69,8 +80,7 @@ struct FlowLayout: Layout {
     let spacing: CGFloat
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = arrangeSubviews(proposal: proposal, subviews: subviews)
-        return result.size
+        arrangeSubviews(proposal: proposal, subviews: subviews).size
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
@@ -105,8 +115,7 @@ struct FlowLayout: Layout {
         }
 
         return ArrangementResult(
-            positions: positions,
-            sizes: sizes,
+            positions: positions, sizes: sizes,
             size: CGSize(width: maxWidth, height: currentY + rowHeight)
         )
     }

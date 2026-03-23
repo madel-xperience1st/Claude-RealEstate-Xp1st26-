@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// App settings screen with org management, demo mode toggle, and account actions.
+/// Premium settings screen with luxury styling.
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var themeManager: ThemeManager
@@ -11,138 +11,142 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // User Info
-                Section {
-                    if let user = UserSession.shared.currentUser {
-                        HStack(spacing: 12) {
-                            Image(systemName: "person.circle.fill")
-                                .font(.system(size: 40))
-                                .foregroundStyle(themeManager.primaryColor)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(user.displayName)
-                                    .font(.headline)
-                                Text(user.email)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                if let role = user.role {
-                                    Text(role)
-                                        .font(.caption2)
-                                        .foregroundStyle(.tertiary)
+            ZStack {
+                Color.brandWhite.ignoresSafeArea()
+
+                List {
+                    // User Profile Card
+                    Section {
+                        if let user = UserSession.shared.currentUser {
+                            HStack(spacing: 14) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.brandNavy)
+                                        .frame(width: 50, height: 50)
+                                    Text(String(user.displayName.prefix(1)))
+                                        .font(.title2.weight(.semibold))
+                                        .foregroundStyle(.brandGold)
+                                }
+
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(user.displayName)
+                                        .font(.headline)
+                                        .foregroundStyle(.brandCharcoal)
+                                    Text(user.email)
+                                        .font(.caption)
+                                        .foregroundStyle(.brandGray)
+                                    if let role = user.role {
+                                        Text(role.uppercased())
+                                            .font(.system(size: 9, weight: .semibold))
+                                            .tracking(1)
+                                            .foregroundStyle(.brandGold)
+                                    }
                                 }
                             }
+                            .padding(.vertical, 6)
                         }
-                        .padding(.vertical, 4)
                     }
-                }
 
-                // Demo Settings
-                Section(NSLocalizedString("settings_demo_section", comment: "")) {
-                    Toggle(
-                        NSLocalizedString("settings_mock_data", comment: ""),
-                        isOn: $settings.useMockData
-                    )
-                    .accessibilityLabel(NSLocalizedString("settings_mock_data", comment: ""))
+                    // Demo Settings
+                    Section("Demo") {
+                        Toggle("Use Mock Data", isOn: $settings.useMockData)
+                            .tint(.brandGold)
 
-                    Toggle(
-                        NSLocalizedString("settings_demo_auth", comment: ""),
-                        isOn: $settings.demoAuthEnabled
-                    )
-                    .accessibilityLabel(NSLocalizedString("settings_demo_auth", comment: ""))
+                        Toggle("Demo Auth", isOn: $settings.demoAuthEnabled)
+                            .tint(.brandGold)
 
-                    Button {
-                        showDemoSwitcher = true
-                    } label: {
-                        HStack {
-                            Label(
-                                NSLocalizedString("switch_demo", comment: ""),
-                                systemImage: "arrow.triangle.2.circlepath"
-                            )
-                            Spacer()
-                            if let project = themeManager.activeProject {
-                                Text(project.name)
+                        Button {
+                            showDemoSwitcher = true
+                        } label: {
+                            HStack {
+                                Label("Switch Project", systemImage: "arrow.triangle.2.circlepath")
+                                    .foregroundStyle(.brandCharcoal)
+                                Spacer()
+                                if let project = themeManager.activeProject {
+                                    Text(project.name)
+                                        .font(.caption)
+                                        .foregroundStyle(.brandGold)
+                                }
+                                Image(systemName: "chevron.right")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.brandGray)
                             }
                         }
                     }
-                }
 
-                // Org Connections
-                Section(NSLocalizedString("settings_orgs_section", comment: "")) {
-                    ForEach(environment.connections) { connection in
+                    // Org Connections
+                    Section("Organizations") {
+                        ForEach(environment.connections) { connection in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(connection.name)
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.brandCharcoal)
+                                    Text(connection.muleBaseURL)
+                                        .font(.caption2)
+                                        .foregroundStyle(.brandGray)
+                                        .lineLimit(1)
+                                }
+                                Spacer()
+                                if connection.isActive {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.brandEmerald)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                environment.switchOrg(to: connection)
+                            }
+                        }
+
+                        Button {
+                            showOrgEditor = true
+                        } label: {
+                            Label("Add Organization", systemImage: "plus.circle")
+                                .foregroundStyle(.brandNavy)
+                        }
+                    }
+
+                    // App Info
+                    Section("About") {
                         HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(connection.name)
-                                    .font(.subheadline)
-                                Text(connection.muleBaseURL)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
+                            Text("Version")
+                                .foregroundStyle(.brandCharcoal)
                             Spacer()
-                            if connection.isActive {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                            }
+                            Text("\(AppConfig.appVersion) (\(AppConfig.buildNumber))")
+                                .foregroundStyle(.brandGray)
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            environment.switchOrg(to: connection)
-                        }
-                        .accessibilityLabel("\(connection.name), \(connection.isActive ? "active" : "inactive")")
-                    }
-
-                    Button {
-                        showOrgEditor = true
-                    } label: {
-                        Label(
-                            NSLocalizedString("settings_add_org", comment: ""),
-                            systemImage: "plus.circle"
-                        )
-                    }
-                }
-
-                // App Info
-                Section(NSLocalizedString("settings_about_section", comment: "")) {
-                    HStack {
-                        Text(NSLocalizedString("settings_version", comment: ""))
-                        Spacer()
-                        Text("\(AppConfig.appVersion) (\(AppConfig.buildNumber))")
-                            .foregroundStyle(.secondary)
-                    }
-                    HStack {
-                        Text(NSLocalizedString("settings_cache", comment: ""))
-                        Spacer()
-                        Button(NSLocalizedString("settings_clear_cache", comment: "")) {
-                            CacheManager.shared.clearAll()
-                        }
-                        .font(.caption)
-                    }
-                }
-
-                // Sign Out
-                Section {
-                    Button(role: .destructive) {
-                        Task { await authManager.signOut() }
-                    } label: {
                         HStack {
+                            Text("Cache")
+                                .foregroundStyle(.brandCharcoal)
                             Spacer()
-                            Text(NSLocalizedString("sign_out", comment: ""))
-                                .fontWeight(.medium)
-                            Spacer()
+                            Button("Clear") {
+                                CacheManager.shared.clearAll()
+                            }
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.brandCoral)
                         }
                     }
-                    .accessibilityLabel(NSLocalizedString("sign_out", comment: ""))
+
+                    // Sign Out
+                    Section {
+                        Button(role: .destructive) {
+                            Task { await authManager.signOut() }
+                        } label: {
+                            HStack {
+                                Spacer()
+                                Text("Sign Out")
+                                    .font(.subheadline.weight(.semibold))
+                                Spacer()
+                            }
+                        }
+                    }
                 }
+                .scrollContentBackground(.hidden)
             }
-            .navigationTitle(NSLocalizedString("settings_title", comment: ""))
-            .sheet(isPresented: $showOrgEditor) {
-                OrgEditorView()
-            }
-            .sheet(isPresented: $showDemoSwitcher) {
-                DemoSwitcherView()
-            }
+            .navigationTitle("Settings")
+            .sheet(isPresented: $showOrgEditor) { OrgEditorView() }
+            .sheet(isPresented: $showDemoSwitcher) { DemoSwitcherView() }
         }
     }
 }
@@ -159,36 +163,31 @@ struct OrgEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(NSLocalizedString("org_details_section", comment: "")) {
-                    TextField(NSLocalizedString("org_name_label", comment: ""), text: $name)
-                        .accessibilityLabel(NSLocalizedString("org_name_label", comment: ""))
-                    TextField(NSLocalizedString("org_mule_url_label", comment: ""), text: $muleBaseURL)
+                Section("Organization Details") {
+                    TextField("Name", text: $name)
+                    TextField("MuleSoft Base URL", text: $muleBaseURL)
                         .textContentType(.URL)
                         .autocapitalization(.none)
-                        .accessibilityLabel(NSLocalizedString("org_mule_url_label", comment: ""))
-                    TextField(NSLocalizedString("org_id_label", comment: ""), text: $orgId)
+                    TextField("Org ID", text: $orgId)
                         .autocapitalization(.none)
-                        .accessibilityLabel(NSLocalizedString("org_id_label", comment: ""))
                 }
             }
-            .navigationTitle(NSLocalizedString("settings_add_org", comment: ""))
+            .navigationTitle("Add Organization")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("cancel", comment: "")) { dismiss() }
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(.brandGray)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("settings_save", comment: "")) {
-                        let connection = OrgConnection(
-                            name: name,
-                            muleBaseURL: muleBaseURL,
-                            orgId: orgId
-                        )
+                    Button("Save") {
+                        let connection = OrgConnection(name: name, muleBaseURL: muleBaseURL, orgId: orgId)
                         environment.addConnection(connection)
                         dismiss()
                     }
                     .disabled(name.isEmpty || muleBaseURL.count < 10)
                     .fontWeight(.semibold)
+                    .foregroundStyle(.brandNavy)
                 }
             }
         }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// List of service requests with ability to create new ones.
+/// Premium service requests list.
 struct ServiceRequestView: View {
     @StateObject private var viewModel = ServiceViewModel()
     @EnvironmentObject var themeManager: ThemeManager
@@ -9,23 +9,27 @@ struct ServiceRequestView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(viewModel.serviceRequests) { request in
-                    NavigationLink(destination: ServiceRequestDetailView(requestId: request.id)) {
-                        ServiceRequestListRow(request: request)
+            ZStack {
+                Color.brandWhite.ignoresSafeArea()
+
+                List {
+                    ForEach(viewModel.serviceRequests) { request in
+                        NavigationLink(destination: ServiceRequestDetailView(requestId: request.id)) {
+                            ServiceRequestListRow(request: request)
+                        }
+                        .listRowBackground(Color.brandWhite)
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
-            .listStyle(.plain)
-            .navigationTitle(NSLocalizedString("tab_services", comment: ""))
+            .navigationTitle("Services")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showCreateForm = true
-                    } label: {
+                    Button { showCreateForm = true } label: {
                         Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.brandNavy)
                     }
-                    .accessibilityLabel(NSLocalizedString("new_request", comment: ""))
                 }
             }
             .sheet(isPresented: $showCreateForm) {
@@ -37,8 +41,8 @@ struct ServiceRequestView: View {
             .emptyState(
                 viewModel.serviceRequests.isEmpty && !viewModel.isLoading,
                 icon: "wrench.and.screwdriver",
-                title: NSLocalizedString("no_requests_title", comment: ""),
-                message: NSLocalizedString("no_requests_message", comment: "")
+                title: "No Requests",
+                message: "No service requests yet."
             )
             .errorAlert(error: $viewModel.error) {
                 if let unitId = selectedUnitId {
@@ -54,43 +58,52 @@ struct ServiceRequestView: View {
     }
 }
 
-/// Row for a service request in the list.
+/// Premium service request row.
 struct ServiceRequestListRow: View {
     let request: ServiceRequest
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(request.caseNumber)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.brandGold)
                 Spacer()
                 StatusBadge.forServiceStatus(request.status)
             }
 
             Text(request.subject)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.brandCharcoal)
                 .lineLimit(2)
 
             HStack {
-                Label(request.category, systemImage: "tag")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: "tag")
+                        .font(.caption2)
+                        .foregroundStyle(.brandGold)
+                    Text(request.category)
+                        .font(.caption)
+                        .foregroundStyle(.brandGray)
+                }
                 Spacer()
                 Text(request.createdDate.relativeFormatted)
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.brandGray)
             }
 
             if let technician = request.assignedTechnician {
-                Label(technician, systemImage: "person.fill")
-                    .font(.caption)
-                    .foregroundStyle(.blue)
+                HStack(spacing: 4) {
+                    Image(systemName: "person.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.brandSky)
+                    Text(technician)
+                        .font(.caption)
+                        .foregroundStyle(.brandSky)
+                }
             }
         }
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
+        .padding(.vertical, 6)
     }
 }
 
@@ -99,7 +112,20 @@ struct ServiceRequestDetailView: View {
     let requestId: String
 
     var body: some View {
-        Text(NSLocalizedString("service_detail_placeholder", comment: ""))
-            .navigationTitle(NSLocalizedString("request_detail", comment: ""))
+        ZStack {
+            Color.brandWhite.ignoresSafeArea()
+            VStack(spacing: 16) {
+                Image(systemName: "wrench.and.screwdriver")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.brandGold)
+                Text("Request Details")
+                    .font(.headline)
+                    .foregroundStyle(.brandCharcoal)
+                Text("Detailed view coming soon")
+                    .font(.subheadline)
+                    .foregroundStyle(.brandGray)
+            }
+        }
+        .navigationTitle("Request Detail")
     }
 }

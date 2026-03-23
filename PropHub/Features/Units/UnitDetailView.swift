@@ -1,127 +1,136 @@
 import SwiftUI
 import Kingfisher
 
-/// Detailed view of a single unit showing floor plan, payment progress, and quick actions.
+/// Premium unit detail view with elegant layout.
 struct UnitDetailView: View {
     let unit: Unit
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Floor Plan Image
-                if let floorPlanUrl = unit.floorPlanUrl, let url = URL(string: floorPlanUrl) {
-                    KFImage(url)
-                        .placeholder {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(.systemGray5))
-                                .overlay {
-                                    Image(systemName: "photo")
-                                        .font(.largeTitle)
-                                        .foregroundStyle(.secondary)
-                                }
-                        }
-                        .resizable()
-                        .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .padding(.horizontal)
-                        .accessibilityLabel(NSLocalizedString("floor_plan", comment: ""))
-                }
+        ZStack {
+            Color.brandWhite.ignoresSafeArea()
 
-                // Unit Info Card
-                VStack(spacing: 12) {
-                    infoRow(
-                        label: NSLocalizedString("unit_number_label", comment: ""),
-                        value: unit.unitNumber
-                    )
-                    infoRow(
-                        label: NSLocalizedString("building_label", comment: ""),
-                        value: unit.building
-                    )
-                    infoRow(
-                        label: NSLocalizedString("floor_label", comment: ""),
-                        value: "\(unit.floor)"
-                    )
-                    infoRow(
-                        label: NSLocalizedString("type_label", comment: ""),
-                        value: unit.unitType
-                    )
-                    infoRow(
-                        label: NSLocalizedString("area_label", comment: ""),
-                        value: "\(Int(unit.areaSqm)) sqm / \(Int(unit.areaSqft)) sqft"
-                    )
-                    infoRow(
-                        label: NSLocalizedString("status_label", comment: ""),
-                        value: unit.status
-                    )
-                    if let handoverDate = unit.handoverDate {
-                        infoRow(
-                            label: NSLocalizedString("handover_label", comment: ""),
-                            value: handoverDate.mediumFormatted
-                        )
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    // Floor Plan
+                    if let floorPlanUrl = unit.floorPlanUrl, let url = URL(string: floorPlanUrl) {
+                        KFImage(url)
+                            .placeholder {
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.brandPlatinum)
+                                    .frame(height: 220)
+                                    .overlay {
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "photo")
+                                                .font(.largeTitle)
+                                                .foregroundStyle(.brandGray)
+                                            Text("Floor Plan")
+                                                .font(.caption)
+                                                .foregroundStyle(.brandGray)
+                                        }
+                                    }
+                            }
+                            .resizable()
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .padding(.horizontal, 20)
                     }
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 12).fill(.background))
-                .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-                .padding(.horizontal)
 
-                // Payment Progress
-                if let completion = unit.paymentCompletion {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("payment_progress", comment: ""))
-                            .font(.headline)
-                        ProgressView(value: completion)
-                            .scaleEffect(y: 2)
-                            .tint(themeManager.primaryColor)
+                    // Unit Info Card
+                    VStack(spacing: 14) {
+                        infoRow(label: "Unit", value: unit.unitNumber)
+                        Divider()
+                        infoRow(label: "Building", value: unit.building)
+                        Divider()
+                        infoRow(label: "Floor", value: "\(unit.floor)")
+                        Divider()
+                        infoRow(label: "Type", value: unit.unitType)
+                        Divider()
+                        infoRow(label: "Area", value: "\(Int(unit.areaSqm)) sqm / \(Int(unit.areaSqft)) sqft")
+                        Divider()
                         HStack {
-                            CurrencyText(
-                                amount: unit.totalPrice * completion,
-                                currencyCode: themeManager.currencyCode,
-                                style: .caption
-                            )
-                            .foregroundStyle(.green)
+                            Text("Status")
+                                .font(.subheadline)
+                                .foregroundStyle(.brandGray)
                             Spacer()
-                            CurrencyText(
-                                amount: unit.totalPrice,
-                                currencyCode: themeManager.currencyCode,
-                                style: .caption
-                            )
+                            StatusBadge.forUnitStatus(unit.status)
+                        }
+                        if let handoverDate = unit.handoverDate {
+                            Divider()
+                            infoRow(label: "Handover", value: handoverDate.mediumFormatted)
                         }
                     }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(.background))
-                    .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-                    .padding(.horizontal)
-                }
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(.white)
+                            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                    )
+                    .padding(.horizontal, 20)
 
-                // Quick Actions
-                VStack(spacing: 12) {
-                    NavigationLink(destination: InstallmentView(unitId: unit.id)) {
-                        quickActionRow(
-                            icon: "creditcard",
-                            title: NSLocalizedString("view_payments", comment: ""),
-                            color: .blue
+                    // Payment Progress
+                    if let completion = unit.paymentCompletion {
+                        VStack(alignment: .leading, spacing: 12) {
+                            SectionHeader(title: "Payment Progress", icon: "creditcard.fill")
+
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.brandPlatinum)
+                                        .frame(height: 10)
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.goldGradient)
+                                        .frame(width: geo.size.width * completion, height: 10)
+                                }
+                            }
+                            .frame(height: 10)
+
+                            HStack {
+                                CurrencyText(
+                                    amount: unit.totalPrice * completion,
+                                    currencyCode: themeManager.currencyCode,
+                                    style: .caption
+                                )
+                                .foregroundStyle(.brandEmerald)
+                                Spacer()
+                                Text("\(Int(completion * 100))%")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.brandGold)
+                                Spacer()
+                                CurrencyText(
+                                    amount: unit.totalPrice,
+                                    currencyCode: themeManager.currencyCode,
+                                    style: .caption
+                                )
+                                .foregroundStyle(.brandCharcoal)
+                            }
+                        }
+                        .padding(18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18)
+                                .fill(.white)
+                                .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
                         )
+                        .padding(.horizontal, 20)
                     }
-                    NavigationLink(destination: ServiceRequestView()) {
-                        quickActionRow(
-                            icon: "wrench.and.screwdriver",
-                            title: NSLocalizedString("request_service", comment: ""),
-                            color: .orange
-                        )
+
+                    // Quick Actions
+                    VStack(spacing: 12) {
+                        NavigationLink(destination: InstallmentView(unitId: unit.id)) {
+                            quickActionRow(icon: "creditcard", title: "View Payments", color: .brandNavy)
+                        }
+                        NavigationLink(destination: ServiceRequestView()) {
+                            quickActionRow(icon: "wrench.and.screwdriver", title: "Request Service", color: .brandGold)
+                        }
+                        NavigationLink(destination: AssetListView(unitId: unit.id)) {
+                            quickActionRow(icon: "shippingbox", title: "View Assets", color: .brandSky)
+                        }
                     }
-                    NavigationLink(destination: AssetListView(unitId: unit.id)) {
-                        quickActionRow(
-                            icon: "shippingbox",
-                            title: NSLocalizedString("view_assets", comment: ""),
-                            color: .purple
-                        )
-                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal)
+                .padding(.vertical)
             }
-            .padding(.vertical)
         }
         .navigationTitle(unit.unitNumber)
         .navigationBarTitleDisplayMode(.inline)
@@ -131,32 +140,37 @@ struct UnitDetailView: View {
         HStack {
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.brandGray)
             Spacer()
             Text(value)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.brandCharcoal)
         }
-        .accessibilityElement(children: .combine)
     }
 
     private func quickActionRow(icon: String, title: String, color: Color) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(color)
-                .frame(width: 32)
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(color.opacity(0.1))
+                    .frame(width: 40, height: 40)
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundStyle(color)
+            }
             Text(title)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.brandCharcoal)
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.brandGray)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(.background))
-        .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-        .accessibilityLabel(title)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.white)
+                .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+        )
     }
 }

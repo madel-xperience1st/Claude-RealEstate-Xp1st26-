@@ -1,58 +1,57 @@
 import SwiftUI
 import Kingfisher
 
-/// Custom navigation bar that displays the active demo project's branding.
-/// Includes the developer logo, project name, and a demo switcher button.
+/// Premium navigation bar with developer branding.
 struct BrandedNavigationBar: View {
     @EnvironmentObject var themeManager: ThemeManager
     let onSwitchDemo: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Developer Logo
+        HStack(spacing: 10) {
             if let logoURL = themeManager.logoURL {
                 KFImage(logoURL)
-                    .placeholder {
-                        Image(systemName: "building.2.fill")
-                            .foregroundStyle(themeManager.primaryColor)
-                    }
+                    .placeholder { brandIcon }
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 32, height: 32)
+                    .frame(width: 30, height: 30)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .accessibilityLabel(themeManager.developerName)
             } else {
-                Image(systemName: "building.2.fill")
-                    .font(.title2)
-                    .foregroundStyle(themeManager.primaryColor)
-                    .accessibilityHidden(true)
+                brandIcon
             }
 
-            // Developer / Project Name
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(themeManager.developerName)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.brandCharcoal)
                     .lineLimit(1)
                 if let projectName = themeManager.activeProject?.name {
                     Text(projectName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption2)
+                        .foregroundStyle(.brandGold)
                         .lineLimit(1)
                 }
             }
 
             Spacer()
 
-            // Demo Switcher Button
             Button(action: onSwitchDemo) {
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.title3)
-                    .foregroundStyle(themeManager.primaryColor)
+                    .font(.subheadline)
+                    .foregroundStyle(.brandNavy)
+                    .padding(6)
+                    .background(Circle().fill(Color.brandPlatinum))
             }
-            .accessibilityLabel(NSLocalizedString("switch_demo", comment: ""))
         }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .background(.ultraThinMaterial)
+    }
+
+    private var brandIcon: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color.brandNavy)
+                .frame(width: 30, height: 30)
+            Image(systemName: "building.2.fill")
+                .font(.caption)
+                .foregroundStyle(.brandGold)
+        }
     }
 }

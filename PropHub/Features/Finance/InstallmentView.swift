@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Timeline view of all installments for a selected unit.
+/// Premium finance view with payment timeline.
 struct InstallmentView: View {
     let unitId: String
     @StateObject private var viewModel: FinanceViewModel
@@ -13,34 +13,34 @@ struct InstallmentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Payment Summary Card
-            if let summary = viewModel.paymentSummary {
-                paymentSummaryCard(summary)
-            }
+        ZStack {
+            Color.brandWhite.ignoresSafeArea()
 
-            // Tab Selector
-            Picker("", selection: $selectedTab) {
-                Text(NSLocalizedString("installments_tab", comment: "")).tag(0)
-                Text(NSLocalizedString("invoices_tab", comment: "")).tag(1)
-                Text(NSLocalizedString("overdue_tab", comment: "")).tag(2)
-            }
-            .pickerStyle(.segmented)
-            .padding()
+            VStack(spacing: 0) {
+                // Payment Summary Card
+                if let summary = viewModel.paymentSummary {
+                    paymentSummaryCard(summary)
+                }
 
-            // Tab Content
-            switch selectedTab {
-            case 0:
-                installmentsList
-            case 1:
-                invoicesList
-            case 2:
-                overdueList
-            default:
-                installmentsList
+                // Tab Selector
+                Picker("", selection: $selectedTab) {
+                    Text("Installments").tag(0)
+                    Text("Invoices").tag(1)
+                    Text("Overdue").tag(2)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+
+                switch selectedTab {
+                case 0: installmentsList
+                case 1: invoicesList
+                case 2: overdueList
+                default: installmentsList
+                }
             }
         }
-        .navigationTitle(NSLocalizedString("finance_title", comment: ""))
+        .navigationTitle("Finance")
         .navigationBarTitleDisplayMode(.inline)
         .loading(viewModel.isLoading)
         .errorAlert(error: $viewModel.error) {
@@ -51,70 +51,58 @@ struct InstallmentView: View {
         }
     }
 
-    // MARK: - Summary Card
-
     private func paymentSummaryCard(_ summary: PaymentSummary) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             HStack {
-                summaryItem(
-                    label: NSLocalizedString("total_price_label", comment: ""),
-                    amount: summary.totalPrice
-                )
+                summaryItem(label: "Total", amount: summary.totalPrice, color: .white)
                 Spacer()
-                summaryItem(
-                    label: NSLocalizedString("paid_amount_label", comment: ""),
-                    amount: summary.paidAmount,
-                    color: .green
-                )
+                summaryItem(label: "Paid", amount: summary.paidAmount, color: .brandChampagne)
             }
             HStack {
-                summaryItem(
-                    label: NSLocalizedString("remaining_label", comment: ""),
-                    amount: summary.remainingBalance,
-                    color: .orange
-                )
+                summaryItem(label: "Remaining", amount: summary.remainingBalance, color: .brandGold)
                 Spacer()
                 if let nextDue = summary.nextDueDate {
-                    VStack(alignment: .trailing) {
-                        Text(NSLocalizedString("next_due_label", comment: ""))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("NEXT DUE")
+                            .font(.system(size: 9, weight: .medium))
+                            .tracking(1)
+                            .foregroundStyle(.white.opacity(0.6))
                         Text(nextDue.mediumFormatted)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
                     }
                 }
             }
         }
-        .padding()
-        .background(themeManager.primaryColor.opacity(0.1))
-        .accessibilityElement(children: .contain)
+        .padding(20)
+        .background(Color.premiumGradient)
     }
 
-    private func summaryItem(label: String, amount: Double, color: Color = .primary) -> some View {
-        VStack(alignment: .leading) {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+    private func summaryItem(label: String, amount: Double, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label.uppercased())
+                .font(.system(size: 9, weight: .medium))
+                .tracking(1)
+                .foregroundStyle(.white.opacity(0.6))
             CurrencyText(amount: amount, currencyCode: themeManager.currencyCode, style: .body)
                 .foregroundStyle(color)
         }
     }
 
-    // MARK: - Lists
-
     private var installmentsList: some View {
         List {
             ForEach(viewModel.installments) { installment in
                 InstallmentRow(installment: installment)
+                    .listRowBackground(Color.brandWhite)
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .emptyState(
             viewModel.installments.isEmpty && !viewModel.isLoading,
             icon: "creditcard",
-            title: NSLocalizedString("no_installments_title", comment: ""),
-            message: NSLocalizedString("no_installments_message", comment: "")
+            title: "No Installments",
+            message: "No payment installments found."
         )
     }
 
@@ -127,43 +115,48 @@ struct InstallmentView: View {
     }
 }
 
-/// Row displaying a single installment milestone.
+/// Premium installment row with timeline dot.
 struct InstallmentRow: View {
     let installment: Installment
 
     var body: some View {
-        HStack {
+        HStack(spacing: 14) {
             // Timeline dot
-            Circle()
-                .fill(colorForStatus(installment.status))
-                .frame(width: 12, height: 12)
+            ZStack {
+                Circle()
+                    .fill(colorForStatus(installment.status).opacity(0.15))
+                    .frame(width: 28, height: 28)
+                Circle()
+                    .fill(colorForStatus(installment.status))
+                    .frame(width: 10, height: 10)
+            }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(installment.milestoneName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.brandCharcoal)
                 Text(installment.dueDate.mediumFormatted)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.brandGray)
             }
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
                 CurrencyText(amount: installment.amount, style: .body)
+                    .foregroundStyle(.brandCharcoal)
                 StatusBadge.forInstallmentStatus(installment.status)
             }
         }
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
+        .padding(.vertical, 6)
     }
 
     private func colorForStatus(_ status: String) -> Color {
         switch status.lowercased() {
-        case "paid": return .green
-        case "overdue": return .red
-        case "upcoming": return .blue
-        default: return .gray
+        case "paid": return .brandEmerald
+        case "overdue": return .brandCoral
+        case "upcoming": return .brandSky
+        default: return .brandGray
         }
     }
 }

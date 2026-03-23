@@ -1,7 +1,7 @@
 import SwiftUI
 import Kingfisher
 
-/// Browse new project launches with waitlist enrollment capability.
+/// Premium new launches showcase.
 struct NewLaunchesView: View {
     @State private var launches: [ProjectLaunch] = []
     @State private var isLoading = false
@@ -10,28 +10,30 @@ struct NewLaunchesView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 20) {
-                    ForEach(launches) { launch in
-                        NavigationLink(destination: LaunchDetailView(launch: launch)) {
-                            LaunchCard(launch: launch)
+            ZStack {
+                Color.brandWhite.ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 20) {
+                        ForEach(launches) { launch in
+                            NavigationLink(destination: LaunchDetailView(launch: launch)) {
+                                LaunchCard(launch: launch)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
+                    .padding(20)
                 }
-                .padding()
             }
-            .navigationTitle(NSLocalizedString("new_launches_title", comment: ""))
+            .navigationTitle("New Launches")
             .loading(isLoading)
             .emptyState(
                 launches.isEmpty && !isLoading,
                 icon: "sparkles",
-                title: NSLocalizedString("no_launches_title", comment: ""),
-                message: NSLocalizedString("no_launches_message", comment: "")
+                title: "No Launches",
+                message: "No upcoming projects at the moment."
             )
-            .task {
-                await loadLaunches()
-            }
+            .task { await loadLaunches() }
         }
     }
 
@@ -57,57 +59,70 @@ struct NewLaunchesView: View {
     }
 }
 
-/// Card for a project launch in the list.
+/// Premium launch card.
 struct LaunchCard: View {
     let launch: ProjectLaunch
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             // Hero Image
             if let firstURL = launch.imageURLs.first {
                 KFImage(firstURL)
                     .placeholder {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemGray5))
-                            .frame(height: 180)
+                        RoundedRectangle(cornerRadius: 0)
+                            .fill(Color.brandPlatinum)
+                            .frame(height: 200)
+                            .overlay {
+                                Image(systemName: "photo")
+                                    .font(.title)
+                                    .foregroundStyle(.brandGray)
+                            }
                     }
                     .resizable()
                     .scaledToFill()
-                    .frame(height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .frame(height: 200)
+                    .clipped()
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(launch.name)
                     .font(.headline)
+                    .foregroundStyle(.brandCharcoal)
 
                 if let handover = launch.expectedHandover {
-                    Label(handover, systemImage: "calendar")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.caption2)
+                            .foregroundStyle(.brandGold)
+                        Text(handover)
+                            .font(.caption)
+                            .foregroundStyle(.brandGray)
+                    }
                 }
 
                 if let min = launch.priceRangeMin, let max = launch.priceRangeMax {
-                    HStack {
+                    HStack(spacing: 4) {
                         CurrencyText(amount: min, currencyCode: themeManager.currencyCode, style: .caption)
                         Text("-")
                             .font(.caption)
                         CurrencyText(amount: max, currencyCode: themeManager.currencyCode, style: .caption)
                     }
-                    .foregroundStyle(themeManager.primaryColor)
+                    .foregroundStyle(.brandGold)
                 }
             }
-            .padding(.horizontal, 4)
+            .padding(16)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 16).fill(.background))
-        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
-        .accessibilityElement(children: .combine)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(.white)
+                .shadow(color: .black.opacity(0.06), radius: 10, y: 5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
 
-/// Detailed view of a project launch with waitlist enrollment.
+/// Premium launch detail with waitlist.
 struct LaunchDetailView: View {
     let launch: ProjectLaunch
     @State private var showWaitlistSheet = false
@@ -115,94 +130,107 @@ struct LaunchDetailView: View {
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Image Carousel
-                TabView {
-                    ForEach(launch.imageURLs, id: \.self) { url in
-                        KFImage(url)
-                            .resizable()
-                            .scaledToFill()
-                    }
-                }
-                .frame(height: 250)
-                .tabViewStyle(.page)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
+        ZStack {
+            Color.brandWhite.ignoresSafeArea()
 
-                // Description
-                if let description = launch.description {
-                    Text(description)
-                        .font(.body)
-                        .padding(.horizontal)
-                }
-
-                // Details
-                VStack(alignment: .leading, spacing: 8) {
-                    if let handover = launch.expectedHandover {
-                        detailRow(
-                            icon: "calendar",
-                            label: NSLocalizedString("expected_handover", comment: ""),
-                            value: handover
-                        )
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Image Carousel
+                    TabView {
+                        ForEach(launch.imageURLs, id: \.self) { url in
+                            KFImage(url)
+                                .resizable()
+                                .scaledToFill()
+                        }
                     }
-                    if let min = launch.priceRangeMin, let max = launch.priceRangeMax {
+                    .frame(height: 260)
+                    .tabViewStyle(.page)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .padding(.horizontal, 20)
+
+                    if let description = launch.description {
+                        Text(description)
+                            .font(.body)
+                            .foregroundStyle(.brandCharcoal)
+                            .padding(.horizontal, 20)
+                    }
+
+                    // Details
+                    VStack(spacing: 12) {
+                        if let handover = launch.expectedHandover {
+                            detailRow(icon: "calendar", label: "Expected Handover", value: handover)
+                        }
+                        if let min = launch.priceRangeMin, let max = launch.priceRangeMax {
+                            HStack {
+                                Image(systemName: "banknote")
+                                    .foregroundStyle(.brandGold)
+                                    .frame(width: 24)
+                                Text("Price Range")
+                                    .foregroundStyle(.brandGray)
+                                Spacer()
+                                HStack(spacing: 4) {
+                                    CurrencyText(amount: min, currencyCode: themeManager.currencyCode, style: .caption)
+                                    Text("-")
+                                    CurrencyText(amount: max, currencyCode: themeManager.currencyCode, style: .caption)
+                                }
+                                .foregroundStyle(.brandCharcoal)
+                            }
+                            .font(.subheadline)
+                        }
+                    }
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(.white)
+                            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
+                    )
+                    .padding(.horizontal, 20)
+
+                    // Amenities
+                    if !launch.amenitiesList.isEmpty {
+                        VStack(alignment: .leading, spacing: 10) {
+                            SectionHeader(title: "Amenities", icon: "sparkles")
+                            FlowLayout(spacing: 8) {
+                                ForEach(launch.amenitiesList, id: \.self) { amenity in
+                                    Text(amenity)
+                                        .font(.caption)
+                                        .foregroundStyle(.brandNavy)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 7)
+                                        .background(
+                                            Capsule().fill(Color.brandChampagne)
+                                        )
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+
+                    // Waitlist Button
+                    Button {
+                        showWaitlistSheet = true
+                        joinedWaitlist = true
+                    } label: {
                         HStack {
-                            Image(systemName: "banknote")
-                                .frame(width: 24)
-                            Text(NSLocalizedString("price_range", comment: ""))
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            HStack(spacing: 4) {
-                                CurrencyText(amount: min, currencyCode: themeManager.currencyCode, style: .caption)
-                                Text("-")
-                                CurrencyText(amount: max, currencyCode: themeManager.currencyCode, style: .caption)
-                            }
+                            Image(systemName: joinedWaitlist ? "checkmark.circle.fill" : "bell.fill")
+                            Text(joinedWaitlist ? "On Waitlist" : "Join Waitlist")
+                                .font(.headline)
                         }
-                        .font(.subheadline)
+                        .foregroundStyle(joinedWaitlist ? .brandEmerald : .brandNavy)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(
+                            joinedWaitlist
+                            ? AnyShapeStyle(Color.brandEmerald.opacity(0.12))
+                            : AnyShapeStyle(Color.goldGradient)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
+                    .disabled(joinedWaitlist)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal)
-
-                // Amenities
-                if !launch.amenitiesList.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(NSLocalizedString("amenities_title", comment: ""))
-                            .font(.headline)
-                        FlowLayout(spacing: 8) {
-                            ForEach(launch.amenitiesList, id: \.self) { amenity in
-                                Text(amenity)
-                                    .font(.caption)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        Capsule()
-                                            .fill(themeManager.primaryColor.opacity(0.1))
-                                    )
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-
-                // Join Waitlist Button
-                Button {
-                    showWaitlistSheet = true
-                } label: {
-                    HStack {
-                        Image(systemName: joinedWaitlist ? "checkmark.circle.fill" : "bell.fill")
-                        Text(joinedWaitlist
-                             ? NSLocalizedString("on_waitlist", comment: "")
-                             : NSLocalizedString("join_waitlist", comment: ""))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(joinedWaitlist ? .green : themeManager.primaryColor)
-                .disabled(joinedWaitlist)
-                .padding()
-                .accessibilityLabel(NSLocalizedString("join_waitlist", comment: ""))
+                .padding(.vertical)
             }
         }
         .navigationTitle(launch.name)
@@ -212,12 +240,14 @@ struct LaunchDetailView: View {
     private func detailRow(icon: String, label: String, value: String) -> some View {
         HStack {
             Image(systemName: icon)
+                .foregroundStyle(.brandGold)
                 .frame(width: 24)
             Text(label)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.brandGray)
             Spacer()
             Text(value)
                 .fontWeight(.medium)
+                .foregroundStyle(.brandCharcoal)
         }
         .font(.subheadline)
     }

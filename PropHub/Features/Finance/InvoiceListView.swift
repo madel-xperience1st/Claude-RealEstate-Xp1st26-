@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// List of all invoices with download PDF capability.
+/// Premium invoice list with download capability.
 struct InvoiceListView: View {
     @ObservedObject var viewModel: FinanceViewModel
     @State private var downloadingInvoiceId: String?
@@ -11,18 +11,18 @@ struct InvoiceListView: View {
                 InvoiceRow(
                     invoice: invoice,
                     isDownloading: downloadingInvoiceId == invoice.id,
-                    onDownload: {
-                        Task { await downloadPDF(invoice) }
-                    }
+                    onDownload: { Task { await downloadPDF(invoice) } }
                 )
+                .listRowBackground(Color.brandWhite)
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .emptyState(
             viewModel.invoices.isEmpty && !viewModel.isLoading,
             icon: "doc.text",
-            title: NSLocalizedString("no_invoices_title", comment: ""),
-            message: NSLocalizedString("no_invoices_message", comment: "")
+            title: "No Invoices",
+            message: "No invoices found."
         )
     }
 
@@ -34,7 +34,6 @@ struct InvoiceListView: View {
                 .appendingPathComponent("\(invoice.invoiceNumber).pdf")
             try data.write(to: url)
             await MainActor.run {
-                // Share the downloaded PDF
                 let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let rootVC = windowScene.windows.first?.rootViewController {
@@ -48,26 +47,27 @@ struct InvoiceListView: View {
     }
 }
 
-/// Row displaying a single invoice.
+/// Premium invoice row.
 struct InvoiceRow: View {
     let invoice: Invoice
     let isDownloading: Bool
     let onDownload: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(invoice.invoiceNumber)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.brandCharcoal)
                 Text(invoice.date.mediumFormatted)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.brandGray)
             }
 
             Spacer()
 
             CurrencyText(amount: invoice.amount, style: .body)
+                .foregroundStyle(.brandCharcoal)
 
             StatusBadge.forInstallmentStatus(invoice.status)
 
@@ -76,16 +76,15 @@ struct InvoiceRow: View {
                     if isDownloading {
                         ProgressView()
                             .scaleEffect(0.7)
+                            .tint(.brandGold)
                     } else {
                         Image(systemName: "arrow.down.doc")
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(.brandNavy)
                     }
                 }
                 .disabled(isDownloading)
-                .accessibilityLabel(NSLocalizedString("download_pdf", comment: ""))
             }
         }
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
+        .padding(.vertical, 6)
     }
 }

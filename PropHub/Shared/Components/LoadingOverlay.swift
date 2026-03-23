@@ -1,17 +1,24 @@
 import SwiftUI
 
-/// Full-screen loading overlay with a blurred background and progress indicator.
+/// Premium loading overlay with gold accent.
 struct LoadingOverlay: View {
     var body: some View {
         ZStack {
-            Color.black.opacity(0.2)
+            Color.black.opacity(0.15)
                 .ignoresSafeArea()
-            ProgressView()
-                .scaleEffect(1.5)
-                .tint(.white)
-                .padding(24)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            VStack(spacing: 16) {
+                ProgressView()
+                    .scaleEffect(1.3)
+                    .tint(.brandGold)
+                Text("Loading")
+                    .font(.caption)
+                    .foregroundStyle(.brandGray)
+            }
+            .padding(28)
+            .background(
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(.ultraThinMaterial)
+            )
         }
-        .accessibilityLabel(NSLocalizedString("loading", comment: ""))
     }
 }

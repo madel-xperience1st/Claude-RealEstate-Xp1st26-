@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// In-app chat interface connecting to Salesforce Agentforce.
+/// Premium concierge chat interface.
 struct ChatView: View {
     @StateObject private var viewModel = ChatViewModel()
     @State private var messageText = ""
@@ -9,10 +9,9 @@ struct ChatView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Messages
                 ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 14) {
                             ForEach(viewModel.messages) { message in
                                 ChatBubble(message: message) { quickReply in
                                     Task {
@@ -33,8 +32,9 @@ struct ChatView: View {
                                 .padding(.horizontal)
                             }
                         }
-                        .padding()
+                        .padding(16)
                     }
+                    .background(Color.brandWhite)
                     .onChange(of: viewModel.messages.count) { _, _ in
                         withAnimation {
                             proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
@@ -42,46 +42,44 @@ struct ChatView: View {
                     }
                 }
 
-                Divider()
-
                 // Input Bar
-                HStack(spacing: 12) {
-                    TextField(
-                        NSLocalizedString("chat_placeholder", comment: ""),
-                        text: $messageText,
-                        axis: .vertical
-                    )
-                    .textFieldStyle(.plain)
-                    .lineLimit(1...4)
-                    .focused($isInputFocused)
-                    .accessibilityLabel(NSLocalizedString("chat_input", comment: ""))
+                VStack(spacing: 0) {
+                    Divider()
+                    HStack(spacing: 12) {
+                        TextField("Ask your concierge...", text: $messageText, axis: .vertical)
+                            .textFieldStyle(.plain)
+                            .lineLimit(1...4)
+                            .focused($isInputFocused)
+                            .font(.subheadline)
 
-                    Button {
-                        let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        guard !text.isEmpty else { return }
-                        messageText = ""
-                        Task { await viewModel.sendMessage(text) }
-                    } label: {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.title2)
+                        Button {
+                            let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
+                            guard !text.isEmpty else { return }
+                            messageText = ""
+                            Task { await viewModel.sendMessage(text) }
+                        } label: {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(
+                                    messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    ? .brandGray : .brandNavy
+                                )
+                        }
+                        .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
-                    .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .accessibilityLabel(NSLocalizedString("send_message", comment: ""))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(.white)
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .background(.ultraThinMaterial)
             }
-            .navigationTitle(NSLocalizedString("tab_chat", comment: ""))
+            .navigationTitle("Concierge")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        // Escalate to live agent
-                    } label: {
+                    Button {} label: {
                         Image(systemName: "person.fill.questionmark")
+                            .foregroundStyle(.brandNavy)
                     }
-                    .accessibilityLabel(NSLocalizedString("escalate_agent", comment: ""))
                 }
             }
             .loading(viewModel.isLoading)
@@ -94,29 +92,26 @@ struct ChatView: View {
     }
 }
 
-/// Typing indicator animation.
+/// Typing indicator with gold dots.
 struct TypingIndicator: View {
     @State private var animating = false
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             ForEach(0..<3) { index in
                 Circle()
-                    .fill(Color.secondary)
-                    .frame(width: 8, height: 8)
+                    .fill(Color.brandGold)
+                    .frame(width: 7, height: 7)
                     .opacity(animating ? 0.3 : 1.0)
                     .animation(
-                        .easeInOut(duration: 0.6)
-                            .repeatForever()
-                            .delay(Double(index) * 0.2),
+                        .easeInOut(duration: 0.6).repeatForever().delay(Double(index) * 0.2),
                         value: animating
                     )
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color(.systemGray5), in: RoundedRectangle(cornerRadius: 16))
+        .padding(.vertical, 12)
+        .background(Color.brandPlatinum, in: RoundedRectangle(cornerRadius: 18))
         .onAppear { animating = true }
-        .accessibilityLabel(NSLocalizedString("agent_typing", comment: ""))
     }
 }

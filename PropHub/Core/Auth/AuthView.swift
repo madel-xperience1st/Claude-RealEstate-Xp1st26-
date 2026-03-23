@@ -1,77 +1,99 @@
 import SwiftUI
 
-/// Login screen for PropHub.
-/// Shows branding and a single sign-in button (demo mode).
-/// Google SSO can be re-added later.
+/// Premium login screen for PropHub — Emaar-inspired luxury design.
 struct AuthView: View {
     @EnvironmentObject var authManager: AuthManager
+    @State private var animateGold = false
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(.systemBackground), Color.blue.opacity(0.1)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Color.brandNavy.ignoresSafeArea()
 
-            VStack(spacing: 32) {
+            Circle()
+                .fill(Color.brandGold.opacity(0.06))
+                .frame(width: 500, height: 500)
+                .offset(x: 150, y: -200)
+            Circle()
+                .fill(Color.brandGold.opacity(0.04))
+                .frame(width: 400, height: 400)
+                .offset(x: -180, y: 300)
+
+            VStack(spacing: 0) {
                 Spacer()
 
-                // App Logo & Title
-                VStack(spacing: 16) {
-                    Image(systemName: "building.2.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(.blue)
-                        .accessibilityHidden(true)
+                VStack(spacing: 20) {
+                    ZStack {
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [.brandGold, Color(hex: "E8D48B"), .brandGold],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                            .frame(width: 110, height: 110)
+                            .rotationEffect(.degrees(animateGold ? 360 : 0))
+                            .animation(.linear(duration: 20).repeatForever(autoreverses: false), value: animateGold)
 
-                    Text("PropHub")
-                        .font(.system(size: 40, weight: .bold))
+                        Image(systemName: "building.2.fill")
+                            .font(.system(size: 48, weight: .light))
+                            .foregroundStyle(.brandGold)
+                    }
 
-                    Text(NSLocalizedString("auth_subtitle", comment: ""))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
+                    VStack(spacing: 8) {
+                        Text("PROPHUB")
+                            .font(.system(size: 36, weight: .light))
+                            .tracking(12)
+                            .foregroundStyle(.white)
+
+                        Rectangle()
+                            .fill(Color.goldGradient)
+                            .frame(width: 60, height: 1.5)
+
+                        Text("LUXURY LIVING EXPERIENCE")
+                            .font(.system(size: 11, weight: .medium))
+                            .tracking(4)
+                            .foregroundStyle(.brandGold.opacity(0.7))
+                    }
                 }
 
                 Spacer()
 
-                // Sign-In Button
-                VStack(spacing: 16) {
+                VStack(spacing: 24) {
                     Button {
                         Task { await authManager.signInWithDemoMode() }
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title3)
-                            Text(NSLocalizedString("enter_demo_mode", comment: ""))
-                                .font(.headline)
+                            Image(systemName: "sparkles")
+                                .font(.body)
+                            Text("Enter Experience")
+                                .font(.system(size: 16, weight: .semibold))
+                                .tracking(1)
                         }
+                        .foregroundStyle(.brandNavy)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 50)
+                        .frame(height: 56)
+                        .background(Color.goldGradient)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
                     .disabled(authManager.isLoading)
-                    .padding(.horizontal, 32)
-                    .accessibilityLabel(NSLocalizedString("enter_demo_mode", comment: ""))
+                    .padding(.horizontal, 40)
+                    .accessibilityLabel("Enter Demo Experience")
 
                     if authManager.isLoading {
                         ProgressView()
-                            .progressViewStyle(.circular)
+                            .tint(.brandGold)
                     }
 
-                    Text(NSLocalizedString("auth_restricted", comment: ""))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 48)
+                    Text("Exclusive demo for presales consultants")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.4))
+                        .tracking(0.5)
                 }
 
-                Spacer()
-                    .frame(height: 60)
+                Spacer().frame(height: 80)
             }
         }
+        .onAppear { animateGold = true }
     }
 }

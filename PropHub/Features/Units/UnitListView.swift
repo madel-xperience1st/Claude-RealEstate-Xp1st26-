@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Displays a list of all units owned by the current demo contact.
+/// Premium unit list with card-based layout.
 struct UnitListView: View {
     @StateObject private var viewModel = UnitListViewModel()
     @EnvironmentObject var themeManager: ThemeManager
@@ -8,24 +8,28 @@ struct UnitListView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(viewModel.units) { unit in
-                    NavigationLink(destination: UnitDetailView(unit: unit)) {
-                        UnitCardView(unit: unit)
+            ZStack {
+                Color.brandWhite.ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 16) {
+                        ForEach(viewModel.units) { unit in
+                            NavigationLink(destination: UnitDetailView(unit: unit)) {
+                                UnitCardView(unit: unit)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    .accessibilityLabel("\(unit.unitNumber), \(unit.building), \(unit.status)")
+                    .padding(20)
                 }
             }
-            .listStyle(.plain)
-            .navigationTitle(NSLocalizedString("tab_units", comment: ""))
+            .navigationTitle("My Units")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showDemoSwitcher = true
-                    } label: {
+                    Button { showDemoSwitcher = true } label: {
                         Image(systemName: "arrow.triangle.2.circlepath")
+                            .foregroundStyle(.brandNavy)
                     }
-                    .accessibilityLabel(NSLocalizedString("switch_demo", comment: ""))
                 }
             }
             .sheet(isPresented: $showDemoSwitcher) {
@@ -35,8 +39,8 @@ struct UnitListView: View {
             .emptyState(
                 viewModel.units.isEmpty && !viewModel.isLoading,
                 icon: "building.2",
-                title: NSLocalizedString("no_units_title", comment: ""),
-                message: NSLocalizedString("no_units_message", comment: "")
+                title: "No Units",
+                message: "No units found for this project."
             )
             .errorAlert(error: $viewModel.error) {
                 Task { await viewModel.loadUnits() }
@@ -51,70 +55,91 @@ struct UnitListView: View {
     }
 }
 
-/// Card view for a unit in the list.
+/// Premium unit card with clean layout and progress indicator.
 struct UnitCardView: View {
     let unit: Unit
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header row
             HStack {
-                Text(unit.unitNumber)
-                    .font(.headline)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(unit.unitNumber)
+                        .font(.headline)
+                        .foregroundStyle(.brandCharcoal)
+                    Text(unit.building)
+                        .font(.caption)
+                        .foregroundStyle(.brandGray)
+                }
                 Spacer()
                 StatusBadge.forUnitStatus(unit.status)
             }
 
-            HStack(spacing: 16) {
-                Label(unit.building, systemImage: "building")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Label(
-                    NSLocalizedString("floor_label", comment: "") + " \(unit.floor)",
-                    systemImage: "arrow.up.to.line"
-                )
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
+            Divider()
 
-            HStack {
-                Text(unit.unitType)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            // Details grid
+            HStack(spacing: 0) {
+                unitDetail(icon: "arrow.up.to.line", label: "Floor \(unit.floor)")
                 Spacer()
-                Text("\(Int(unit.areaSqm)) sqm")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                unitDetail(icon: "square.split.2x2", label: unit.unitType)
+                Spacer()
+                unitDetail(icon: "ruler", label: "\(Int(unit.areaSqm)) sqm")
             }
 
             if let handoverDate = unit.handoverDate {
-                HStack {
+                HStack(spacing: 6) {
                     Image(systemName: "calendar")
+                        .font(.caption2)
+                        .foregroundStyle(.brandGold)
+                    Text("Handover: \(handoverDate.mediumFormatted)")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(handoverDate.mediumFormatted)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.brandGray)
                 }
             }
 
-            // Payment progress bar
+            // Payment progress
             if let completion = unit.paymentCompletion {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(spacing: 6) {
                     HStack {
-                        Text(NSLocalizedString("payment_progress", comment: ""))
+                        Text("Payment")
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.brandGray)
                         Spacer()
                         Text("\(Int(completion * 100))%")
-                            .font(.caption2)
-                            .fontWeight(.medium)
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(themeManager.primaryColor)
                     }
-                    ProgressView(value: completion)
-                        .tint(themeManager.primaryColor)
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.brandPlatinum)
+                                .frame(height: 6)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.goldGradient)
+                                .frame(width: geo.size.width * completion, height: 6)
+                        }
+                    }
+                    .frame(height: 6)
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(.white)
+                .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
+        )
+    }
+
+    private func unitDetail(icon: String, label: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption2)
+                .foregroundStyle(.brandGold)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.brandCharcoal)
+        }
     }
 }

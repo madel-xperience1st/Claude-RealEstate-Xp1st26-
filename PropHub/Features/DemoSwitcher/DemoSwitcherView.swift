@@ -1,8 +1,7 @@
 import SwiftUI
 import Kingfisher
 
-/// Grid view for selecting the active demo project.
-/// Displayed after login and accessible from the navigation bar.
+/// Premium demo project selector — card grid with luxury styling.
 struct DemoSwitcherView: View {
     @StateObject private var viewModel = DemoSwitcherViewModel()
     @EnvironmentObject var authManager: AuthManager
@@ -15,50 +14,56 @@ struct DemoSwitcherView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                if viewModel.projects.isEmpty && !viewModel.isLoading {
-                    EmptyStateView(
-                        icon: "folder.badge.questionmark",
-                        title: NSLocalizedString("no_projects_title", comment: ""),
-                        message: NSLocalizedString("no_projects_message", comment: ""),
-                        actionTitle: NSLocalizedString("try_again", comment: ""),
-                        action: { Task { await viewModel.loadProjects() } }
-                    )
-                } else {
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(viewModel.projects) { project in
-                            DemoProjectCard(project: project) {
-                                viewModel.selectProject(project)
-                                dismiss()
+            ZStack {
+                Color.brandWhite.ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    if viewModel.projects.isEmpty && !viewModel.isLoading {
+                        EmptyStateView(
+                            icon: "folder.badge.questionmark",
+                            title: "No Projects",
+                            message: "No demo projects available. Pull to refresh.",
+                            actionTitle: "Retry",
+                            action: { Task { await viewModel.loadProjects() } }
+                        )
+                    } else {
+                        VStack(spacing: 20) {
+                            // Header subtitle
+                            Text("SELECT YOUR EXPERIENCE")
+                                .font(.system(size: 11, weight: .medium))
+                                .tracking(3)
+                                .foregroundStyle(.brandGold)
+                                .padding(.top, 8)
+
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(viewModel.projects) { project in
+                                    DemoProjectCard(project: project) {
+                                        viewModel.selectProject(project)
+                                        dismiss()
+                                    }
+                                }
                             }
                         }
+                        .padding(20)
                     }
-                    .padding()
                 }
             }
-            .navigationTitle(NSLocalizedString("select_demo", comment: ""))
+            .navigationTitle("Projects")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {
-                            // Navigate to org settings
                         } label: {
-                            Label(
-                                NSLocalizedString("org_settings", comment: ""),
-                                systemImage: "server.rack"
-                            )
+                            Label("Org Settings", systemImage: "server.rack")
                         }
                         Button(role: .destructive) {
                             Task { await authManager.signOut() }
                         } label: {
-                            Label(
-                                NSLocalizedString("sign_out", comment: ""),
-                                systemImage: "rectangle.portrait.and.arrow.right"
-                            )
+                            Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .accessibilityLabel(NSLocalizedString("more_options", comment: ""))
+                            .foregroundStyle(.brandNavy)
                     }
                 }
             }
@@ -73,62 +78,67 @@ struct DemoSwitcherView: View {
     }
 }
 
-/// Card displaying a demo project with its branding.
+/// Premium project card with brand colors and elegant styling.
 struct DemoProjectCard: View {
     let project: DemoProject
     let onSelect: () -> Void
 
     var body: some View {
         Button(action: onSelect) {
-            VStack(spacing: 12) {
+            VStack(spacing: 14) {
                 // Developer Logo
-                KFImage(URL(string: project.logoUrl))
-                    .placeholder {
-                        Image(systemName: "building.2.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(Color(hex: project.brandPrimaryColor))
-                    }
-                    .onFailure { _ in }
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 48, height: 48)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: project.brandPrimaryColor).opacity(0.1))
+                        .frame(width: 64, height: 64)
 
-                // Project Info
+                    KFImage(URL(string: project.logoUrl))
+                        .placeholder {
+                            Image(systemName: "building.2.fill")
+                                .font(.system(size: 24))
+                                .foregroundStyle(Color(hex: project.brandPrimaryColor))
+                        }
+                        .onFailure { _ in }
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 36, height: 36)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+
                 VStack(spacing: 4) {
-                    Text(project.developer)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(project.developer.uppercased())
+                        .font(.system(size: 9, weight: .medium))
+                        .tracking(2)
+                        .foregroundStyle(.brandGray)
                         .lineLimit(1)
+
                     Text(project.name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.brandCharcoal)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
+
                     if let count = project.unitCount {
-                        Text(String(
-                            format: NSLocalizedString("unit_count", comment: ""),
-                            count
-                        ))
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                        Text("\(count) units")
+                            .font(.caption2)
+                            .foregroundStyle(.brandGold)
                     }
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding()
+            .padding(.vertical, 20)
+            .padding(.horizontal, 12)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.background)
-                    .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.06), radius: 10, y: 5)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color(hex: project.brandPrimaryColor).opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color(hex: project.brandPrimaryColor).opacity(0.15), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(project.developer) \(project.name)")
-        .accessibilityHint(NSLocalizedString("select_demo_hint", comment: ""))
     }
 }

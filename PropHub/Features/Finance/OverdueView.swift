@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Filtered view showing only overdue installments with penalty and contact action.
+/// Premium overdue payments view with urgency styling.
 struct OverdueView: View {
     @ObservedObject var viewModel: FinanceViewModel
     @EnvironmentObject var themeManager: ThemeManager
@@ -8,68 +8,69 @@ struct OverdueView: View {
     var body: some View {
         List {
             ForEach(viewModel.overdueInstallments) { installment in
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text(installment.milestoneName)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.brandCharcoal)
                         Spacer()
                         CurrencyText(
                             amount: installment.amount,
                             currencyCode: themeManager.currencyCode,
                             style: .body
                         )
+                        .foregroundStyle(.brandCoral)
                     }
 
                     HStack {
-                        Text(
-                            String(
-                                format: NSLocalizedString("days_overdue", comment: ""),
-                                abs(installment.dueDate.daysFromToday)
-                            )
-                        )
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.brandCoral)
+                            Text("\(abs(installment.dueDate.daysFromToday)) days overdue")
+                                .font(.caption)
+                                .foregroundStyle(.brandCoral)
+                        }
 
                         if let penalty = installment.penaltyAmount, penalty > 0 {
                             Spacer()
                             HStack(spacing: 4) {
-                                Text(NSLocalizedString("penalty_label", comment: ""))
+                                Text("Penalty:")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.brandGray)
                                 CurrencyText(
                                     amount: penalty,
                                     currencyCode: themeManager.currencyCode,
                                     style: .caption
                                 )
-                                .foregroundStyle(.red)
+                                .foregroundStyle(.brandCoral)
                             }
                         }
                     }
 
-                    Button {
-                        // Contact action — deep-link to chat or support
-                    } label: {
-                        HStack {
+                    Button {} label: {
+                        HStack(spacing: 6) {
                             Image(systemName: "phone.fill")
-                            Text(NSLocalizedString("contact_us", comment: ""))
+                            Text("Contact Support")
                         }
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.brandNavy)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color.brandChampagne, in: Capsule())
                     }
-                    .buttonStyle(.bordered)
-                    .tint(.blue)
-                    .accessibilityLabel(NSLocalizedString("contact_us", comment: ""))
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
+                .listRowBackground(Color.brandWhite)
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .emptyState(
             viewModel.overdueInstallments.isEmpty && !viewModel.isLoading,
             icon: "checkmark.circle",
-            title: NSLocalizedString("no_overdue_title", comment: ""),
-            message: NSLocalizedString("no_overdue_message", comment: "")
+            title: "All Clear",
+            message: "No overdue payments. You're up to date!"
         )
     }
 }
