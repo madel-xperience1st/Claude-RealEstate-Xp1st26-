@@ -178,11 +178,18 @@
             <url>https://repository.mulesoft.org/releases/</url>
             <layout>default</layout>
         </repository>
-        <!-- Maven Central: transitive deps (json-schema, etc.) -->
+        <!-- Maven Central: transitive deps -->
         <repository>
             <id>central</id>
             <name>Maven Central</name>
             <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+        </repository>
+        <!-- JitPack: everit-org json-schema (GitHub-hosted artifact) -->
+        <repository>
+            <id>jitpack.io</id>
+            <name>JitPack</name>
+            <url>https://jitpack.io</url>
             <layout>default</layout>
         </repository>
     </repositories>
