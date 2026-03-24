@@ -6,7 +6,7 @@
 # or for quick local deployments.
 #
 # PREREQUISITES:
-#   - Java 17+ installed
+#   - Java 17 recommended (JDK 21 works with --add-opens flags)
 #   - Maven 3.8+ installed
 #   - MuleSoft Enterprise credentials in ~/.m2/settings.xml
 #
@@ -66,8 +66,31 @@ if ! command -v mvn &> /dev/null; then
     exit 1
 fi
 
-echo -e "${GREEN}Java: $(java -version 2>&1 | head -1)${NC}"
+JAVA_VER=$(java -version 2>&1 | head -1)
+echo -e "${GREEN}Java: $JAVA_VER${NC}"
 echo -e "${GREEN}Maven: $(mvn -version 2>&1 | head -1)${NC}"
+
+# Mule 4 requires JDK 8, 11, or 17. Add --add-opens flags for JDK 17+
+JAVA_MAJOR=$(java -version 2>&1 | head -1 | sed -E 's/.*"([0-9]+).*/\1/')
+if [ "$JAVA_MAJOR" -ge 17 ] 2>/dev/null; then
+    echo -e "${YELLOW}JDK $JAVA_MAJOR detected — adding module access flags for Mule compatibility${NC}"
+    export MAVEN_OPTS="$MAVEN_OPTS \
+        --add-opens java.base/java.lang=ALL-UNNAMED \
+        --add-opens java.base/java.lang.invoke=ALL-UNNAMED \
+        --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+        --add-opens java.base/java.io=ALL-UNNAMED \
+        --add-opens java.base/java.net=ALL-UNNAMED \
+        --add-opens java.base/java.nio=ALL-UNNAMED \
+        --add-opens java.base/java.util=ALL-UNNAMED \
+        --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
+        --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
+        --add-opens java.base/sun.nio.cs=ALL-UNNAMED \
+        --add-opens java.base/sun.security.ssl=ALL-UNNAMED \
+        --add-opens java.base/sun.security.util=ALL-UNNAMED \
+        --add-opens java.base/sun.security.x509=ALL-UNNAMED \
+        --add-opens java.management/javax.management=ALL-UNNAMED \
+        --add-opens java.base/java.math=ALL-UNNAMED"
+fi
 
 # Load environment variables
 ENV_FILE="$SCRIPT_DIR/.env"
