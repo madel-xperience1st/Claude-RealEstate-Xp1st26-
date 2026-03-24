@@ -137,36 +137,29 @@
              Secure Properties, MUnit). Useful for CI structure validation. -->
         <profile>
             <id>no-enterprise</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.mulesoft.connectors</groupId>
-                    <artifactId>mule-salesforce-connector</artifactId>
-                    <version>${salesforce.connector.version}</version>
-                    <classifier>mule-plugin</classifier>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>com.mulesoft.modules</groupId>
-                    <artifactId>mule-secure-configuration-property-module</artifactId>
-                    <version>${secure.properties.version}</version>
-                    <classifier>mule-plugin</classifier>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>com.mulesoft.munit</groupId>
-                    <artifactId>munit-runner</artifactId>
-                    <version>${munit.version}</version>
-                    <classifier>mule-plugin</classifier>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>com.mulesoft.munit</groupId>
-                    <artifactId>munit-tools</artifactId>
-                    <version>${munit.version}</version>
-                    <classifier>mule-plugin</classifier>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
+            <properties>
+                <mule.skip.validation>true</mule.skip.validation>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.mule.tools.maven</groupId>
+                        <artifactId>mule-maven-plugin</artifactId>
+                        <version>${mule.maven.plugin.version}</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>default-validate</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>default-process-classes</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
             <repositories>
                 <repository>
                     <id>mulesoft-enterprise</id>
