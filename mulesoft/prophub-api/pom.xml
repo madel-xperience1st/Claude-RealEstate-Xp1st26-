@@ -35,6 +35,15 @@
                 <artifactId>mule-maven-plugin</artifactId>
                 <version>${mule.maven.plugin.version}</version>
                 <extensions>true</extensions>
+                <executions>
+                    <!-- Skip XML schema validation: Salesforce connector
+                         requires Mule EE runtime for XSD generation via
+                         Java introspection. CloudHub has EE at deploy time. -->
+                    <execution>
+                        <id>default-process-classes</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
                 <configuration>
                     <cloudHubDeployment>
                         <uri>https://anypoint.mulesoft.com</uri>
