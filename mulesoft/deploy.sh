@@ -14,6 +14,7 @@
 #   ./deploy.sh                    # Deploy with prompts
 #   ./deploy.sh --env dev          # Deploy to dev
 #   ./deploy.sh --local            # Run locally only
+#   ./deploy.sh --no-enterprise    # Build without MuleSoft EE repo
 # ============================================
 
 set -e
@@ -35,6 +36,7 @@ echo -e "${BLUE}============================================${NC}"
 # Parse arguments
 ENV="dev"
 LOCAL_ONLY=false
+NO_ENTERPRISE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -44,6 +46,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --local)
             LOCAL_ONLY=true
+            shift
+            ;;
+        --no-enterprise)
+            NO_ENTERPRISE=true
             shift
             ;;
         *)
@@ -93,7 +99,11 @@ if [ "$JAVA_MAJOR" -ge 17 ] 2>/dev/null; then
 fi
 
 # Check MuleSoft Enterprise credentials (required for Salesforce connector)
-if [ -z "$ANYPOINT_USERNAME" ] || [ -z "$ANYPOINT_PASSWORD" ]; then
+if [ "$NO_ENTERPRISE" = true ]; then
+    echo -e "${YELLOW}Skipping enterprise repo (--no-enterprise mode)${NC}"
+    echo -e "${YELLOW}Salesforce connector will NOT be included${NC}"
+    MAVEN_PROFILE="-P no-enterprise"
+elif [ -z "$ANYPOINT_USERNAME" ] || [ -z "$ANYPOINT_PASSWORD" ]; then
     echo -e "${RED}============================================${NC}"
     echo -e "${RED}  MuleSoft Enterprise credentials required!${NC}"
     echo -e "${RED}============================================${NC}"
@@ -109,9 +119,36 @@ if [ -z "$ANYPOINT_USERNAME" ] || [ -z "$ANYPOINT_PASSWORD" ]; then
     echo -e "  ANYPOINT_PASSWORD=your-anypoint-password"
     echo -e ""
     echo -e "${YELLOW}Sign up at: https://anypoint.mulesoft.com${NC}"
+    echo -e ""
+    echo -e "${BLUE}Or build without enterprise deps:${NC}"
+    echo -e "  ./deploy.sh --no-enterprise --local"
     exit 1
 fi
+
+MAVEN_PROFILE="${MAVEN_PROFILE:-}"
+
+if [ "$NO_ENTERPRISE" != true ]; then
 echo -e "${GREEN}Anypoint credentials: configured${NC}"
+
+# Verify credentials against Anypoint Platform login API
+echo -e "${YELLOW}Verifying Anypoint credentials...${NC}"
+AUTH_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+    "https://anypoint.mulesoft.com/accounts/login" \
+    -H "Content-Type: application/json" \
+    -d "{\"username\":\"$ANYPOINT_USERNAME\",\"password\":\"$ANYPOINT_PASSWORD\"}" 2>/dev/null)
+AUTH_STATUS=$(echo "$AUTH_RESPONSE" | tail -1)
+
+if [ "$AUTH_STATUS" = "200" ]; then
+    echo -e "${GREEN}Anypoint credentials: verified ✓${NC}"
+elif [ "$AUTH_STATUS" = "401" ] || [ "$AUTH_STATUS" = "403" ]; then
+    echo -e "${RED}Anypoint credentials: INVALID (HTTP $AUTH_STATUS)${NC}"
+    echo -e "${YELLOW}Check your username/password at https://anypoint.mulesoft.com${NC}"
+    echo -e "${YELLOW}If your trial expired, sign up for a new one.${NC}"
+    exit 1
+else
+    echo -e "${YELLOW}Could not verify credentials (HTTP $AUTH_STATUS) — continuing anyway${NC}"
+fi
+fi  # end NO_ENTERPRISE check
 
 # Load environment variables
 ENV_FILE="$SCRIPT_DIR/.env"
@@ -141,7 +178,7 @@ cd "$PROJECT_DIR"
 # Build
 echo -e "\n${YELLOW}Building project...${NC}"
 mvn clean package -DskipTests \
-    -Dmule.env="$ENV"
+    -Dmule.env="$ENV" $MAVEN_PROFILE
 
 echo -e "${GREEN}Build successful!${NC}"
 
@@ -153,7 +190,7 @@ if [ "$LOCAL_ONLY" = true ]; then
     echo -e "${BLUE}API Console: http://localhost:8081/console${NC}"
     echo -e "${YELLOW}Press Ctrl+C to stop${NC}\n"
 
-    mvn mule:run \
+    mvn mule:run $MAVEN_PROFILE \
         -Dmule.env="$ENV" \
         -DSF_CONSUMER_KEY="$SF_CONSUMER_KEY" \
         -DSF_USERNAME="$SF_USERNAME" \

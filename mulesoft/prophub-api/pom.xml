@@ -131,6 +131,63 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <!-- Use: mvn clean package -P no-enterprise -DskipTests
+             Builds without MuleSoft Enterprise repo (skips Salesforce connector,
+             Secure Properties, MUnit). Useful for CI structure validation. -->
+        <profile>
+            <id>no-enterprise</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.mulesoft.connectors</groupId>
+                    <artifactId>mule-salesforce-connector</artifactId>
+                    <version>${salesforce.connector.version}</version>
+                    <classifier>mule-plugin</classifier>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.mulesoft.modules</groupId>
+                    <artifactId>mule-secure-configuration-property-module</artifactId>
+                    <version>${secure.properties.version}</version>
+                    <classifier>mule-plugin</classifier>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.mulesoft.munit</groupId>
+                    <artifactId>munit-runner</artifactId>
+                    <version>${munit.version}</version>
+                    <classifier>mule-plugin</classifier>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.mulesoft.munit</groupId>
+                    <artifactId>munit-tools</artifactId>
+                    <version>${munit.version}</version>
+                    <classifier>mule-plugin</classifier>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <repositories>
+                <repository>
+                    <id>mulesoft-enterprise</id>
+                    <name>MuleSoft Enterprise (disabled)</name>
+                    <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>mulesoft-enterprise</id>
+                    <name>MuleSoft Enterprise (disabled)</name>
+                    <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>false</enabled></snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
     <repositories>
         <repository>
             <id>anypoint-exchange-v3</id>
