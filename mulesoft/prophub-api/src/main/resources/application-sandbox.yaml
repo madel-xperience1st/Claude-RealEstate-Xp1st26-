@@ -7,14 +7,11 @@
 http:
   port: "8081"
 
-# Salesforce Connection (OAuth 2.0 JWT Bearer via Connected App)
+# Salesforce Connection (Username + Password + Security Token)
 sf:
-  consumer.key: "${SF_CONSUMER_KEY}"
-  keystore.path: "${SF_KEYSTORE_PATH}"
-  keystore.password: "${SF_KEYSTORE_PASSWORD}"
   username: "${SF_USERNAME}"
-  token.endpoint: "https://test.salesforce.com/services/oauth2/token"
-  audience.url: "https://test.salesforce.com"
+  password: "${SF_PASSWORD}"
+  security.token: "${SF_SECURITY_TOKEN}"
 
   demo.user.email: "${SF_DEMO_USER_EMAIL}"
 

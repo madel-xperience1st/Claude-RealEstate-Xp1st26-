@@ -40,18 +40,14 @@
 
     <!-- ============================================ -->
     <!-- SALESFORCE CONNECTOR                          -->
-    <!-- OAuth 2.0 JWT Bearer via Connected App        -->
-    <!-- Credentials live in SF org (permanent),       -->
-    <!-- so only MuleSoft secrets change on trial swap  -->
+    <!-- Basic Auth (username + password + token)      -->
+    <!-- Get security token: SF Setup > Reset Token    -->
     <!-- ============================================ -->
     <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config">
-        <salesforce:oauth-jwt-connection
-            consumerKey="${sf.consumer.key}"
-            keyStorePath="${sf.keystore.path}"
-            storePassword="${sf.keystore.password}"
-            principal="${sf.username}"
-            tokenEndpoint="${sf.token.endpoint}"
-            audienceUrl="${sf.audience.url}" />
+        <salesforce:basic-connection
+            username="${sf.username}"
+            password="${sf.password}"
+            securityToken="${sf.security.token}" />
     </salesforce:sfdc-config>
 
     <!-- ============================================ -->
