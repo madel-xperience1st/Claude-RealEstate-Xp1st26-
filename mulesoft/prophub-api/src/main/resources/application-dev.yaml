@@ -11,12 +11,12 @@
 http:
   port: "8081"
 
-# Salesforce Connection (Username + Password + Security Token)
-# Get your security token: SF Setup > My Personal Information > Reset My Security Token
+# Salesforce Connection (OAuth 2.0 JWT Bearer via Connected App)
 sf:
+  consumer.key: "${SF_CONSUMER_KEY}"
+  keystore.path: "${SF_KEYSTORE_PATH}"
+  keystore.password: "${SF_KEYSTORE_PASSWORD}"
   username: "${SF_USERNAME}"
-  password: "${SF_PASSWORD}"
-  security.token: "${SF_SECURITY_TOKEN}"
 
   # Demo user email (matched against Presales_User__mdt)
   demo.user.email: "${SF_DEMO_USER_EMAIL}"

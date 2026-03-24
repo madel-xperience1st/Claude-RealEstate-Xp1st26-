@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
       xmlns:http="http://www.mulesoft.org/schema/mule/http"
       xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
       xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
@@ -23,7 +22,7 @@
     <!-- ============================================ -->
     <!-- HTTP LISTENER (Inbound - iOS App connects)    -->
     <!-- ============================================ -->
-    <http:listener-config name="HTTP_Listener_Config" doc:name="HTTP Listener Config">
+    <http:listener-config name="HTTP_Listener_Config">
         <http:listener-connection
             host="0.0.0.0"
             port="${http.port}" />
@@ -40,14 +39,14 @@
 
     <!-- ============================================ -->
     <!-- SALESFORCE CONNECTOR                          -->
-    <!-- Basic Auth (username + password + token)      -->
-    <!-- Get security token: SF Setup > Reset Token    -->
+    <!-- OAuth 2.0 JWT Bearer via Connected App        -->
     <!-- ============================================ -->
-    <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config">
-        <salesforce:basic-connection
-            username="${sf.username}"
-            password="${sf.password}"
-            securityToken="${sf.security.token}" />
+    <salesforce:sfdc-config name="Salesforce_Config">
+        <salesforce:oauth-jwt-connection
+            consumerKey="${sf.consumer.key}"
+            keyStorePath="${sf.keystore.path}"
+            storePassword="${sf.keystore.password}"
+            principal="${sf.username}" />
     </salesforce:sfdc-config>
 
     <!-- ============================================ -->
