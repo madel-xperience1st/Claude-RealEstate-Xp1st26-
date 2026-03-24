@@ -92,6 +92,27 @@ if [ "$JAVA_MAJOR" -ge 17 ] 2>/dev/null; then
         --add-opens java.base/java.math=ALL-UNNAMED"
 fi
 
+# Check MuleSoft Enterprise credentials (required for Salesforce connector)
+if [ -z "$ANYPOINT_USERNAME" ] || [ -z "$ANYPOINT_PASSWORD" ]; then
+    echo -e "${RED}============================================${NC}"
+    echo -e "${RED}  MuleSoft Enterprise credentials required!${NC}"
+    echo -e "${RED}============================================${NC}"
+    echo -e "${YELLOW}The Salesforce connector and other enterprise${NC}"
+    echo -e "${YELLOW}modules require Anypoint Platform credentials.${NC}"
+    echo -e ""
+    echo -e "${BLUE}Set these environment variables:${NC}"
+    echo -e "  export ANYPOINT_USERNAME=your-anypoint-email"
+    echo -e "  export ANYPOINT_PASSWORD=your-anypoint-password"
+    echo -e ""
+    echo -e "${BLUE}Or add them to mulesoft/.env:${NC}"
+    echo -e "  ANYPOINT_USERNAME=your-anypoint-email"
+    echo -e "  ANYPOINT_PASSWORD=your-anypoint-password"
+    echo -e ""
+    echo -e "${YELLOW}Sign up at: https://anypoint.mulesoft.com${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Anypoint credentials: configured${NC}"
+
 # Load environment variables
 ENV_FILE="$SCRIPT_DIR/.env"
 if [ -f "$ENV_FILE" ]; then
