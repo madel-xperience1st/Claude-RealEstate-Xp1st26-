@@ -41,13 +41,14 @@
     <!-- SALESFORCE CONNECTOR                          -->
     <!-- OAuth 2.0 JWT Bearer via Connected App        -->
     <!-- ============================================ -->
-    <salesforce:config name="Salesforce_Config">
+    <salesforce:sfdc-config name="Salesforce_Config">
         <salesforce:oauth-jwt-connection
             consumerKey="${sf.consumer.key}"
             keyStorePath="${sf.keystore.path}"
             storePassword="${sf.keystore.password}"
-            principal="${sf.username}" />
-    </salesforce:config>
+            principal="${sf.username}"
+            tokenEndpoint="https://login.salesforce.com/services/oauth2/token" />
+    </salesforce:sfdc-config>
 
     <!-- ============================================ -->
     <!-- OBJECT STORE (JWT token cache, sessions)      -->
