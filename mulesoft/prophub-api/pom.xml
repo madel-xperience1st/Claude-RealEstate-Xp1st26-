@@ -160,44 +160,29 @@
                     </plugin>
                 </plugins>
             </build>
-            <repositories>
-                <repository>
-                    <id>mulesoft-enterprise</id>
-                    <name>MuleSoft Enterprise (disabled)</name>
-                    <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
-                    <releases><enabled>false</enabled></releases>
-                    <snapshots><enabled>false</enabled></snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>mulesoft-enterprise</id>
-                    <name>MuleSoft Enterprise (disabled)</name>
-                    <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
-                    <releases><enabled>false</enabled></releases>
-                    <snapshots><enabled>false</enabled></snapshots>
-                </pluginRepository>
-            </pluginRepositories>
         </profile>
     </profiles>
 
     <repositories>
+        <!-- Anypoint Exchange: Salesforce connector + enterprise modules -->
         <repository>
             <id>anypoint-exchange-v3</id>
             <name>Anypoint Exchange V3</name>
             <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
             <layout>default</layout>
         </repository>
+        <!-- MuleSoft public releases: runtime, plugin, community connectors -->
         <repository>
             <id>mulesoft-releases</id>
             <name>MuleSoft Releases</name>
             <url>https://repository.mulesoft.org/releases/</url>
             <layout>default</layout>
         </repository>
+        <!-- Maven Central: transitive deps (json-schema, etc.) -->
         <repository>
-            <id>mulesoft-enterprise</id>
-            <name>MuleSoft Enterprise</name>
-            <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
             <layout>default</layout>
         </repository>
     </repositories>
@@ -207,12 +192,6 @@
             <id>mulesoft-releases</id>
             <name>MuleSoft Releases</name>
             <url>https://repository.mulesoft.org/releases/</url>
-            <layout>default</layout>
-        </pluginRepository>
-        <pluginRepository>
-            <id>mulesoft-enterprise</id>
-            <name>MuleSoft Enterprise</name>
-            <url>https://repository.mulesoft.org/nexus/content/repositories/private/</url>
             <layout>default</layout>
         </pluginRepository>
     </pluginRepositories>
